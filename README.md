@@ -21,13 +21,14 @@ Private web app for weekly shift planning.
 - Weekly calendar backed by Supabase
 - Create and update shifts
 - Copy one week across a date range
+- In-app swap requests page with pending badge
+- Accept / reject swap requests inside the web app
 - Closed days handling
 - Swap request creation
 - Mobile-first layout
 
 ### Still missing
 - Real notifications (Web Push / Telegram)
-- Accept / reject swap flow
 - First-login password reset flow
 - Final PWA packaging and Vercel deployment
 
@@ -84,6 +85,8 @@ npm run dev
 Run [supabase/schema.sql](supabase/schema.sql) in the Supabase SQL Editor.
 
 Then create the first auth user in Supabase Authentication and run [supabase/bootstrap_admin.sql](supabase/bootstrap_admin.sql) after replacing placeholder values.
+
+To enable the full swap-request workflow, run [supabase/swap_request_workflow.sql](supabase/swap_request_workflow.sql) in the Supabase SQL Editor as well.
 
 ## Data model
 

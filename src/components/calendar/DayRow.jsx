@@ -2,7 +2,7 @@ import EmployeeBadge from './EmployeeBadge'
 
 const DAYS = ['Dom', 'Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab']
 
-export default function DayRow({ date, shift, employees, onPress, currentUser }) {
+export default function DayRow({ date, shift, employees, onPress, currentUser, hasPendingRequest }) {
   const today = new Date()
   const isToday = date.toDateString() === today.toDateString()
   const isClosed = shift?.closed === true
@@ -41,6 +41,12 @@ export default function DayRow({ date, shift, employees, onPress, currentUser })
 
       {/* Contenuto */}
       <div className="flex-1 flex flex-wrap content-center gap-1.5 px-3 py-3">
+        {hasPendingRequest && (
+          <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 border border-amber-200 px-2 py-1 text-[11px] font-semibold text-amber-700">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+            Richiesta pendente
+          </span>
+        )}
         {isClosed ? (
           <span className="text-slate-400 text-sm font-medium">Chiuso</span>
         ) : !hasEmployees ? (

@@ -1,8 +1,10 @@
 ﻿import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from '@/context/AuthContext'
+import { RequestsProvider } from '@/context/RequestsContext'
 import Login from '@/pages/Login'
 import Calendar from '@/pages/Calendar'
 import Employees from '@/pages/Employees'
+import Requests from '@/pages/Requests'
 import Layout from '@/components/Layout'
 
 function ProtectedRoute({ children }) {
@@ -29,6 +31,7 @@ function AppRoutes() {
       <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
         <Route index element={<Navigate to="/calendar" replace />} />
         <Route path="calendar" element={<Calendar />} />
+        <Route path="requests" element={<Requests />} />
         <Route path="employees" element={<AdminRoute><Employees /></AdminRoute>} />
       </Route>
       <Route path="*" element={<Navigate to="/calendar" replace />} />
@@ -51,7 +54,9 @@ export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <AppRoutes />
+        <RequestsProvider>
+          <AppRoutes />
+        </RequestsProvider>
       </AuthProvider>
     </BrowserRouter>
   )

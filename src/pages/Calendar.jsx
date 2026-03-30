@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useAuth } from '@/context/AuthContext'
+import { useRequests } from '@/context/RequestsContext'
 import { useCalendar, getWeekNumber } from '@/hooks/useCalendar'
 import DayRow from '@/components/calendar/DayRow'
 import CopyWeekModal from '@/components/modals/CopyWeekModal'
@@ -11,6 +12,7 @@ const MONTHS = ['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno',
 
 export default function Calendar() {
   const { user } = useAuth()
+  const { pendingShiftIds, createSwapRequest } = useRequests()
   const {
     weekDays,
     currentMonday,
@@ -19,7 +21,6 @@ export default function Calendar() {
     getShiftForDay,
     saveShift,
     copyWeek,
-    createSwapRequest,
     employees,
     loading,
     error,
@@ -129,6 +130,7 @@ export default function Calendar() {
             employees={employees}
             onPress={() => setSelectedDay(day)}
             currentUser={user}
+            hasPendingRequest={pendingShiftIds.has(getShiftForDay(day)?.id)}
           />
         ))}
       </div>
