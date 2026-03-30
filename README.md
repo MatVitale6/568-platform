@@ -20,12 +20,12 @@ Private web app for weekly shift planning.
 - Employee management backed by Supabase
 - Weekly calendar backed by Supabase
 - Create and update shifts
+- Copy one week across a date range
 - Closed days handling
 - Swap request creation
 - Mobile-first layout
 
 ### Still missing
-- Copy week over a date range
 - Real notifications (Web Push / Telegram)
 - Accept / reject swap flow
 - First-login password reset flow

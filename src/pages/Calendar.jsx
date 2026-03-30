@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useAuth } from '@/context/AuthContext'
 import { useCalendar, getWeekNumber } from '@/hooks/useCalendar'
 import DayRow from '@/components/calendar/DayRow'
+import CopyWeekModal from '@/components/modals/CopyWeekModal'
 import ShiftModal from '@/components/modals/ShiftModal'
 import SwapModal from '@/components/modals/SwapModal'
 
@@ -17,12 +18,14 @@ export default function Calendar() {
     goToNextWeek,
     getShiftForDay,
     saveShift,
+    copyWeek,
     createSwapRequest,
     employees,
     loading,
     error,
   } = useCalendar(user)
   const [selectedDay, setSelectedDay] = useState(null)
+  const [copyWeekOpen, setCopyWeekOpen] = useState(false)
   const [actionError, setActionError] = useState('')
 
   const month = MONTHS[currentMonday.getMonth()]
@@ -52,6 +55,17 @@ export default function Calendar() {
     }
   }
 
+  const handleCopyWeek = async (payload) => {
+    setActionError('')
+    try {
+      await copyWeek(payload)
+      setCopyWeekOpen(false)
+    } catch (copyError) {
+      setActionError(copyError.message || 'Copia settimana non riuscita')
+      throw copyError
+    }
+  }
+
   return (
     <div className="flex flex-col">
       {/* Navigazione settimana */}
@@ -77,6 +91,20 @@ export default function Calendar() {
           </svg>
         </button>
       </div>
+
+      {user?.role === 'admin' && (
+        <div className="bg-white px-4 py-3 border-b border-slate-100 flex justify-end">
+          <button
+            onClick={() => setCopyWeekOpen(true)}
+            className="inline-flex items-center gap-2 rounded-xl bg-indigo-50 px-4 py-2.5 text-sm font-semibold text-indigo-600 border border-indigo-200 hover:bg-indigo-100 transition"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h8M8 12h8m-8 5h5M7 3h10a2 2 0 012 2v14a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2z" />
+            </svg>
+            Copia settimana
+          </button>
+        </div>
+      )}
 
       {(error || actionError) && (
         <div className="mx-4 mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
@@ -106,6 +134,15 @@ export default function Calendar() {
       </div>
 
       {/* Modal Admin: crea / modifica turno */}
+      {user?.role === 'admin' && copyWeekOpen && (
+        <CopyWeekModal
+          currentMonday={currentMonday}
+          onSubmit={handleCopyWeek}
+          onClose={() => setCopyWeekOpen(false)}
+          submitError={actionError}
+        />
+      )}
+
       {user?.role === 'admin' && selectedDay && (
         <ShiftModal
           date={selectedDay}

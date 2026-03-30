@@ -19,6 +19,12 @@ function getMondayOfWeek(date) {
   return d
 }
 
+function addDays(date, amount) {
+  const next = new Date(date)
+  next.setDate(next.getDate() + amount)
+  return next
+}
+
 export function formatDateKey(date) {
   const y = date.getFullYear()
   const m = String(date.getMonth() + 1).padStart(2, '0')
@@ -172,24 +178,35 @@ export function useCalendar(currentUser) {
     return null
   }
 
-  const saveShift = async (date, shiftData) => {
-    const key = formatDateKey(date)
-
+  const persistShiftForDate = useCallback(async (dateKey, shiftData) => {
     if (!isSupabaseConfigured || !supabase) {
-      setShifts(prev => ({ ...prev, [key]: shiftData }))
+      setShifts(prev => {
+        const next = { ...prev }
+        if (shiftData === null) {
+          delete next[dateKey]
+          return next
+        }
+
+        next[dateKey] = shiftData
+        return next
+      })
       return
     }
 
-    if (!currentUser?.id) {
-      throw new Error('Utente non riconosciuto')
-    }
+    if (shiftData === null) {
+      const { error: deleteShiftError } = await supabase
+        .from('shifts')
+        .delete()
+        .eq('work_date', dateKey)
 
-    setError('')
+      if (deleteShiftError) throw deleteShiftError
+      return
+    }
 
     const { data: shiftRow, error: shiftError } = await supabase
       .from('shifts')
       .upsert({
-        work_date: key,
+        work_date: dateKey,
         is_closed: shiftData.closed,
         created_by: currentUser.id,
       }, { onConflict: 'work_date' })
@@ -217,6 +234,66 @@ export function useCalendar(currentUser) {
         )
 
       if (insertAssignmentsError) throw insertAssignmentsError
+    }
+  }, [currentUser?.id])
+
+  const saveShift = async (date, shiftData) => {
+    const key = formatDateKey(date)
+
+    if (!isSupabaseConfigured || !supabase) {
+      await persistShiftForDate(key, shiftData)
+      return
+    }
+
+    if (!currentUser?.id) {
+      throw new Error('Utente non riconosciuto')
+    }
+
+    setError('')
+
+    await persistShiftForDate(key, shiftData)
+
+    await reloadCalendar()
+  }
+
+  const copyWeek = async ({ startDate, endDate }) => {
+    const sourceWeek = weekDays.map((day) => ({
+      date: new Date(day),
+      shift: getShiftForDay(day),
+    }))
+
+    const startMonday = getMondayOfWeek(new Date(startDate))
+    const endMonday = getMondayOfWeek(new Date(endDate))
+
+    if (endMonday < startMonday) {
+      throw new Error('Periodo non valido per la copia settimana')
+    }
+
+    setError('')
+
+    for (let monday = new Date(startMonday); monday <= endMonday; monday = addDays(monday, 7)) {
+      for (let index = 0; index < sourceWeek.length; index += 1) {
+        const sourceDay = sourceWeek[index]
+        const targetDate = addDays(monday, index)
+        const targetKey = formatDateKey(targetDate)
+
+        if (targetKey === formatDateKey(sourceDay.date)) {
+          continue
+        }
+
+        const sourceShift = sourceDay.shift
+        const clonedShift = sourceShift
+          ? {
+              closed: sourceShift.closed,
+              employees: (sourceShift.employees ?? []).map((employee) => ({
+                id: employee.id,
+                partial: employee.partial,
+              })),
+            }
+          : null
+
+        await persistShiftForDate(targetKey, clonedShift)
+      }
     }
 
     await reloadCalendar()
@@ -254,6 +331,7 @@ export function useCalendar(currentUser) {
     goToNextWeek,
     getShiftForDay,
     saveShift,
+    copyWeek,
     createSwapRequest,
     employees,
     loading,
