@@ -13,7 +13,7 @@ export default function Layout() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col max-w-lg mx-auto">
+    <div className="min-h-screen w-full bg-slate-50 flex flex-col">
       {/* Header */}
       <header className="bg-slate-900 text-white px-4 py-3 flex items-center justify-between sticky top-0 z-10 shadow-md">
         <div className="flex items-center gap-2">
@@ -45,7 +45,7 @@ export default function Layout() {
       </main>
 
       {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-lg bg-white border-t border-slate-200 flex z-10">
+      <nav className="fixed inset-x-0 bottom-0 w-full bg-white border-t border-slate-200 flex z-10">
         <NavLink
           to="/calendar"
           className={({ isActive }) =>

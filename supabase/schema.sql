@@ -90,6 +90,17 @@ as $$
   );
 $$;
 
+create or replace function public.current_profile_id()
+returns uuid
+language sql
+stable
+as $$
+  select id
+  from public.profiles
+  where auth_user_id = auth.uid()
+  limit 1;
+$$;
+
 alter table public.profiles enable row level security;
 alter table public.employees enable row level security;
 alter table public.shifts enable row level security;
@@ -170,8 +181,8 @@ for select
 to authenticated
 using (
   public.is_admin()
-  or auth.uid() = requester_id
-  or auth.uid() = target_employee_id
+  or public.current_profile_id() = requester_id
+  or public.current_profile_id() = target_employee_id
 );
 
 drop policy if exists "swap_requests_insert_requester_or_admin" on public.swap_requests;
@@ -181,7 +192,7 @@ for insert
 to authenticated
 with check (
   public.is_admin()
-  or auth.uid() = requester_id
+  or public.current_profile_id() = requester_id
 );
 
 drop policy if exists "swap_requests_update_owner_or_admin" on public.swap_requests;
@@ -191,11 +202,11 @@ for update
 to authenticated
 using (
   public.is_admin()
-  or auth.uid() = requester_id
-  or auth.uid() = target_employee_id
+  or public.current_profile_id() = requester_id
+  or public.current_profile_id() = target_employee_id
 )
 with check (
   public.is_admin()
-  or auth.uid() = requester_id
-  or auth.uid() = target_employee_id
+  or public.current_profile_id() = requester_id
+  or public.current_profile_id() = target_employee_id
 );
