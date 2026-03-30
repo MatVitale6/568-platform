@@ -4,29 +4,46 @@ import EmployeeSheet from '@/components/employees/EmployeeSheet'
 import DeleteConfirmDialog from '@/components/employees/DeleteConfirmDialog'
 
 export default function Employees() {
-  const { employees, addEmployee, updateEmployee, deleteEmployee, sendInvite } = useEmployees()
+  const { employees, loading, error, addEmployee, updateEmployee, deleteEmployee, sendInvite } = useEmployees()
   const [sheet, setSheet] = useState(null)       // null | 'create' | { ...employee }
   const [toDelete, setToDelete] = useState(null) // null | employee
   const [inviteSent, setInviteSent] = useState(null)
+  const [actionError, setActionError] = useState('')
 
-  const handleSave = (data) => {
-    if (sheet === 'create') {
-      addEmployee(data)
-    } else {
-      updateEmployee(sheet.id, data)
+  const handleSave = async (data) => {
+    setActionError('')
+    try {
+      if (sheet === 'create') {
+        await addEmployee(data)
+      } else {
+        await updateEmployee(sheet.id, data)
+      }
+      setSheet(null)
+    } catch (saveError) {
+      setActionError(saveError.message || 'Salvataggio non riuscito')
+      throw saveError
     }
-    setSheet(null)
   }
 
-  const handleDelete = () => {
-    deleteEmployee(toDelete.id)
-    setToDelete(null)
+  const handleDelete = async () => {
+    setActionError('')
+    try {
+      await deleteEmployee(toDelete.id)
+      setToDelete(null)
+    } catch (deleteError) {
+      setActionError(deleteError.message || 'Eliminazione non riuscita')
+    }
   }
 
-  const handleInvite = (emp) => {
-    sendInvite(emp.id)
-    setInviteSent(emp.id)
-    setTimeout(() => setInviteSent(null), 3000)
+  const handleInvite = async (emp) => {
+    setActionError('')
+    try {
+      await sendInvite(emp.id)
+      setInviteSent(emp.id)
+      setTimeout(() => setInviteSent(null), 3000)
+    } catch (inviteError) {
+      setActionError(inviteError.message || 'Invito non riuscito')
+    }
   }
 
   return (
@@ -48,9 +65,22 @@ export default function Employees() {
         </button>
       </div>
 
+      {(error || actionError) && (
+        <div className="mx-4 mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {actionError || error}
+        </div>
+      )}
+
       {/* Lista */}
       <div className="divide-y divide-slate-100">
-        {employees.length === 0 && (
+        {loading && (
+          <div className="flex flex-col items-center text-center py-16 px-8 bg-white">
+            <div className="w-8 h-8 rounded-full border-2 border-slate-200 border-t-indigo-500 animate-spin mb-4" />
+            <p className="text-slate-400 text-sm">Caricamento dipendenti...</p>
+          </div>
+        )}
+
+        {!loading && employees.length === 0 && (
           <div className="flex flex-col items-center text-center py-16 px-8">
             <div className="w-14 h-14 bg-slate-100 rounded-full flex items-center justify-center mb-4">
               <svg className="w-7 h-7 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -62,7 +92,7 @@ export default function Employees() {
           </div>
         )}
 
-        {employees.map((emp) => (
+        {!loading && employees.map((emp) => (
           <div key={emp.id} className="bg-white px-4 py-4">
             {/* Riga nome + avatar */}
             <div className="flex items-center gap-3 mb-3">
@@ -138,6 +168,7 @@ export default function Employees() {
           employee={sheet === 'create' ? null : sheet}
           onSave={handleSave}
           onClose={() => setSheet(null)}
+          saveError={actionError}
         />
       )}
 

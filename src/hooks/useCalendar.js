@@ -2,16 +2,13 @@
  * useCalendar.js
  * Hook principale per la gestione del calendario turni.
  *
- * Responsabilità:
- * - Calcolo e navigazione della settimana corrente (lun-dom)
- * - Stato dei turni: { closed: bool, employees: [{ id, partial }] }
- * - Logica giorni di chiusura di default (dom, lun, festività)
- * - Formato chiave data: 'YYYY-MM-DD'
- *
- * TODO: sostituire MOCK_EMPLOYEES e MOCK_SHIFTS con chiamate Supabase
+ * Modalità supportate:
+ * - Supabase: carica dipendenti, turni e richieste reali
+ * - Fallback mock: finché backend non è disponibile
  */
 
-import { useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { isSupabaseConfigured, supabase } from '@/lib/supabase'
 
 function getMondayOfWeek(date) {
   const d = new Date(date)
@@ -65,15 +62,28 @@ export function getWeekNumber(date) {
   return Math.ceil((((d - yearStart) / 86400000) + 1) / 7)
 }
 
-export function useCalendar() {
+function getWeekRange(monday) {
+  const start = formatDateKey(monday)
+  const endDate = new Date(monday)
+  endDate.setDate(endDate.getDate() + 6)
+  const end = formatDateKey(endDate)
+  return { start, end }
+}
+
+export function useCalendar(currentUser) {
   const [currentMonday, setCurrentMonday] = useState(() => getMondayOfWeek(new Date()))
-  const [shifts, setShifts] = useState(MOCK_SHIFTS)
+  const [shifts, setShifts] = useState(isSupabaseConfigured ? {} : MOCK_SHIFTS)
+  const [employees, setEmployees] = useState(isSupabaseConfigured ? [] : MOCK_EMPLOYEES)
+  const [loading, setLoading] = useState(isSupabaseConfigured)
+  const [error, setError] = useState('')
 
   const weekDays = Array.from({ length: 7 }, (_, i) => {
     const d = new Date(currentMonday)
     d.setDate(currentMonday.getDate() + i)
     return d
   })
+
+  const weekRange = useMemo(() => getWeekRange(currentMonday), [currentMonday])
 
   const goToPrevWeek = () => setCurrentMonday(prev => {
     const d = new Date(prev); d.setDate(d.getDate() - 7); return d
@@ -83,6 +93,78 @@ export function useCalendar() {
     const d = new Date(prev); d.setDate(d.getDate() + 7); return d
   })
 
+  const loadEmployees = useCallback(async () => {
+    if (!isSupabaseConfigured || !supabase) return MOCK_EMPLOYEES
+
+    const { data, error: employeesError } = await supabase
+      .from('profiles')
+      .select('id, full_name, email, role, color, employees!inner(profile_id)')
+      .order('full_name', { ascending: true })
+
+    if (employeesError) throw employeesError
+
+    return (data ?? []).map((row) => ({
+      id: row.id,
+      name: row.full_name,
+      email: row.email,
+      role: row.role,
+      color: row.color ?? '#6366f1',
+    }))
+  }, [])
+
+  const loadWeekShifts = useCallback(async () => {
+    if (!isSupabaseConfigured || !supabase) return MOCK_SHIFTS
+
+    const { data, error: shiftsError } = await supabase
+      .from('shifts')
+      .select('id, work_date, is_closed, shift_assignments(employee_id, is_partial)')
+      .gte('work_date', weekRange.start)
+      .lte('work_date', weekRange.end)
+      .order('work_date', { ascending: true })
+
+    if (shiftsError) throw shiftsError
+
+    return (data ?? []).reduce((acc, row) => {
+      acc[row.work_date] = {
+        id: row.id,
+        closed: row.is_closed,
+        employees: (row.shift_assignments ?? []).map((assignment) => ({
+          id: assignment.employee_id,
+          partial: assignment.is_partial,
+        })),
+      }
+      return acc
+    }, {})
+  }, [weekRange.end, weekRange.start])
+
+  const reloadCalendar = useCallback(async () => {
+    if (!isSupabaseConfigured || !supabase) {
+      setLoading(false)
+      return
+    }
+
+    setLoading(true)
+    setError('')
+
+    try {
+      const [loadedEmployees, loadedShifts] = await Promise.all([
+        loadEmployees(),
+        loadWeekShifts(),
+      ])
+
+      setEmployees(loadedEmployees)
+      setShifts(loadedShifts)
+    } catch (loadError) {
+      setError(loadError.message || 'Caricamento calendario non riuscito')
+    } finally {
+      setLoading(false)
+    }
+  }, [loadEmployees, loadWeekShifts])
+
+  useEffect(() => {
+    reloadCalendar()
+  }, [reloadCalendar])
+
   const getShiftForDay = (date) => {
     const key = formatDateKey(date)
     if (shifts[key]) return shifts[key]
@@ -90,10 +172,92 @@ export function useCalendar() {
     return null
   }
 
-  const saveShift = (date, shiftData) => {
+  const saveShift = async (date, shiftData) => {
     const key = formatDateKey(date)
-    setShifts(prev => ({ ...prev, [key]: shiftData }))
+
+    if (!isSupabaseConfigured || !supabase) {
+      setShifts(prev => ({ ...prev, [key]: shiftData }))
+      return
+    }
+
+    if (!currentUser?.id) {
+      throw new Error('Utente non riconosciuto')
+    }
+
+    setError('')
+
+    const { data: shiftRow, error: shiftError } = await supabase
+      .from('shifts')
+      .upsert({
+        work_date: key,
+        is_closed: shiftData.closed,
+        created_by: currentUser.id,
+      }, { onConflict: 'work_date' })
+      .select('id')
+      .single()
+
+    if (shiftError) throw shiftError
+
+    const { error: deleteAssignmentsError } = await supabase
+      .from('shift_assignments')
+      .delete()
+      .eq('shift_id', shiftRow.id)
+
+    if (deleteAssignmentsError) throw deleteAssignmentsError
+
+    if (!shiftData.closed && shiftData.employees.length > 0) {
+      const { error: insertAssignmentsError } = await supabase
+        .from('shift_assignments')
+        .insert(
+          shiftData.employees.map((employee) => ({
+            shift_id: shiftRow.id,
+            employee_id: employee.id,
+            is_partial: employee.partial,
+          })),
+        )
+
+      if (insertAssignmentsError) throw insertAssignmentsError
+    }
+
+    await reloadCalendar()
   }
 
-  return { weekDays, currentMonday, goToPrevWeek, goToNextWeek, getShiftForDay, saveShift, employees: MOCK_EMPLOYEES }
+  const createSwapRequest = async ({ date, shiftId, targetEmployeeId }) => {
+    if (!currentUser?.id) {
+      throw new Error('Utente non riconosciuto')
+    }
+
+    if (!shiftId) {
+      throw new Error(`Nessun turno trovato per il giorno ${formatDateKey(date)}`)
+    }
+
+    if (!isSupabaseConfigured || !supabase) {
+      return
+    }
+
+    setError('')
+    const { error: swapError } = await supabase
+      .from('swap_requests')
+      .insert({
+        shift_id: shiftId,
+        requester_id: currentUser.id,
+        target_employee_id: targetEmployeeId,
+      })
+
+    if (swapError) throw swapError
+  }
+
+  return {
+    weekDays,
+    currentMonday,
+    goToPrevWeek,
+    goToNextWeek,
+    getShiftForDay,
+    saveShift,
+    createSwapRequest,
+    employees,
+    loading,
+    error,
+    reloadCalendar,
+  }
 }

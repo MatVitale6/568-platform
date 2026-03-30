@@ -3,22 +3,33 @@ import { useAuth } from '@/context/AuthContext'
 import { Button } from '@/components/ui/button'
 
 export default function Login() {
-  const { login } = useAuth()
+  const { login, loginWithPassword, isMockMode } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [submitting, setSubmitting] = useState(false)
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
+    setSubmitting(true)
 
-    // Mock login temporaneo — verrà sostituito con Supabase
-    if (email === 'birreria568@gmail.com' && password === 'admin') {
-      login({ id: '1', name: 'Amministratore', email, role: 'admin', color: '#6366f1' })
-    } else if (email === 'test@test.com' && password === 'test') {
-      login({ id: '2', name: 'Mario Rossi', email, role: 'employee', color: '#f43f5e' })
-    } else {
-      setError('Email o password non corretti')
+    try {
+      if (isMockMode) {
+        if (email === 'birreria568@gmail.com' && password === 'admin') {
+          login({ id: '1', name: 'Amministratore', email, role: 'admin', color: '#6366f1' })
+        } else if (email === 'test@test.com' && password === 'test') {
+          login({ id: '2', name: 'Mario Rossi', email, role: 'employee', color: '#f43f5e' })
+        } else {
+          throw new Error('Email o password non corretti')
+        }
+      } else {
+        await loginWithPassword(email, password)
+      }
+    } catch (err) {
+      setError(err.message || 'Accesso non riuscito')
+    } finally {
+      setSubmitting(false)
     }
   }
 
@@ -66,14 +77,17 @@ export default function Login() {
           <p className="text-red-400 text-sm text-center bg-red-950/50 border border-red-900 rounded-lg py-2">{error}</p>
         )}
 
-        <Button type="submit" className="w-full bg-indigo-500 hover:bg-indigo-400 text-white font-semibold py-3 rounded-xl text-sm transition shadow-lg shadow-indigo-500/20">
-          Accedi
+        <Button type="submit" disabled={submitting} className="w-full bg-indigo-500 hover:bg-indigo-400 text-white font-semibold py-3 rounded-xl text-sm transition shadow-lg shadow-indigo-500/20 disabled:opacity-70">
+          {submitting ? 'Accesso in corso...' : 'Accedi'}
         </Button>
       </form>
 
-      <p className="text-slate-600 text-xs mt-8">
-        Accesso riservato ai membri del team
-      </p>
+      <div className="text-center mt-8 space-y-1">
+        <p className="text-slate-600 text-xs">Accesso riservato ai membri del team</p>
+        {isMockMode && (
+          <p className="text-amber-400/80 text-[11px]">Modalita demo attiva: Supabase non ancora operativo lato dati</p>
+        )}
+      </div>
     </div>
   )
 }

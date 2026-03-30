@@ -5,9 +5,10 @@ import { Button } from '@/components/ui/button'
 const DAYS_FULL = ['Domenica', 'Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato']
 const MONTHS_SHORT = ['gen', 'feb', 'mar', 'apr', 'mag', 'giu', 'lug', 'ago', 'set', 'ott', 'nov', 'dic']
 
-export default function SwapModal({ date, shift, employees, currentUser, onClose }) {
+export default function SwapModal({ date, shift, employees, currentUser, onClose, onSubmit, submitError }) {
   const [selectedColleague, setSelectedColleague] = useState(null)
   const [sent, setSent] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
 
   const myShift = shift?.employees?.find(e => e.id === currentUser.id)
 
@@ -20,15 +21,20 @@ export default function SwapModal({ date, shift, employees, currentUser, onClose
   const dayLabel = `${DAYS_FULL[date.getDay()]} ${date.getDate()} ${MONTHS_SHORT[date.getMonth()]}`
   const formattedDate = `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`
 
-  const handleSend = () => {
-    // In futuro: invia notifica via Supabase + Telegram/Web Push
-    console.log('Richiesta cambio turno:', {
-      richiedente: currentUser.name,
-      collega: employees.find(e => e.id === selectedColleague)?.name,
-      giorno: formattedDate,
-      turno: myShift?.partial ? 'Parziale' : 'Completo',
-    })
-    setSent(true)
+  const handleSend = async () => {
+    setSubmitting(true)
+    try {
+      await onSubmit({
+        date,
+        shiftId: shift?.id,
+        targetEmployeeId: selectedColleague,
+        shiftType: myShift?.partial ? 'Parziale' : 'Completo',
+        formattedDate,
+      })
+      setSent(true)
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -96,6 +102,12 @@ export default function SwapModal({ date, shift, employees, currentUser, onClose
                 )
               })
             )}
+
+            {submitError && (
+              <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                {submitError}
+              </div>
+            )}
           </div>
         )}
 
@@ -109,10 +121,10 @@ export default function SwapModal({ date, shift, employees, currentUser, onClose
               <Button variant="outline" onClick={onClose} className="flex-1 rounded-xl py-3 text-sm">Annulla</Button>
               <Button
                 onClick={handleSend}
-                disabled={!selectedColleague}
-                className="flex-1 rounded-xl py-3 text-sm bg-indigo-500 hover:bg-indigo-400 text-white"
+                disabled={!selectedColleague || submitting}
+                className="flex-1 rounded-xl py-3 text-sm bg-indigo-500 hover:bg-indigo-400 text-white disabled:opacity-70"
               >
-                Conferma
+                {submitting ? 'Invio...' : 'Conferma'}
               </Button>
             </>
           )}

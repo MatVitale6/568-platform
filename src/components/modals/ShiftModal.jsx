@@ -5,13 +5,14 @@ import { Button } from '@/components/ui/button'
 const DAYS_FULL = ['Domenica', 'Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato']
 const MONTHS_SHORT = ['gen', 'feb', 'mar', 'apr', 'mag', 'giu', 'lug', 'ago', 'set', 'ott', 'nov', 'dic']
 
-export default function ShiftModal({ date, shift, employees, onSave, onClose }) {
+export default function ShiftModal({ date, shift, employees, onSave, onClose, saveError }) {
   const [closed, setClosed] = useState(shift?.closed ?? false)
   const [selected, setSelected] = useState(() => {
     const map = {}
     shift?.employees?.forEach(e => { map[e.id] = { partial: e.partial ?? false } })
     return map
   })
+  const [submitting, setSubmitting] = useState(false)
 
   const toggleEmployee = (id) => {
     setSelected(prev => {
@@ -37,12 +38,17 @@ export default function ShiftModal({ date, shift, employees, onSave, onClose }) 
     setSelected({})
   }
 
-  const handleSave = () => {
-    if (closed) {
-      onSave({ closed: true, employees: [] })
-    } else {
-      const employeeList = Object.entries(selected).map(([id, v]) => ({ id, partial: v.partial }))
-      onSave({ closed: false, employees: employeeList })
+  const handleSave = async () => {
+    setSubmitting(true)
+    try {
+      if (closed) {
+        await onSave({ closed: true, employees: [] })
+      } else {
+        const employeeList = Object.entries(selected).map(([id, v]) => ({ id, partial: v.partial }))
+        await onSave({ closed: false, employees: employeeList })
+      }
+    } finally {
+      setSubmitting(false)
     }
   }
 
@@ -109,16 +115,22 @@ export default function ShiftModal({ date, shift, employees, onSave, onClose }) 
               })}
             </div>
           )}
+
+          {saveError && (
+            <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              {saveError}
+            </div>
+          )}
         </div>
 
         <DialogFooter className="px-5 py-4 border-t border-slate-100 flex gap-2">
-          <Button variant="outline" onClick={onClose} className="flex-1 rounded-xl py-3 text-sm">Annulla</Button>
+          <Button variant="outline" onClick={onClose} disabled={submitting} className="flex-1 rounded-xl py-3 text-sm">Annulla</Button>
           <Button
             onClick={handleSave}
-            disabled={!canSave}
-            className="flex-1 rounded-xl py-3 text-sm bg-indigo-500 hover:bg-indigo-400 text-white"
+            disabled={!canSave || submitting}
+            className="flex-1 rounded-xl py-3 text-sm bg-indigo-500 hover:bg-indigo-400 text-white disabled:opacity-70"
           >
-            Conferma
+            {submitting ? 'Salvataggio...' : 'Conferma'}
           </Button>
         </DialogFooter>
       </DialogContent>

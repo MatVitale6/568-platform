@@ -28,7 +28,7 @@ function Input({ value, onChange, type = 'text', placeholder, autoComplete }) {
   )
 }
 
-export default function EmployeeSheet({ employee, onSave, onClose }) {
+export default function EmployeeSheet({ employee, onSave, onClose, saveError }) {
   const isEdit = !!employee
   const [form, setForm] = useState(isEdit ? {
     name: employee.name,
@@ -38,6 +38,19 @@ export default function EmployeeSheet({ employee, onSave, onClose }) {
     contractEnd: employee.contractEnd ?? '',
   } : EMPTY_FORM)
   const [errors, setErrors] = useState({})
+  const [submitting, setSubmitting] = useState(false)
+
+  useEffect(() => {
+    if (!employee) return
+
+    setForm({
+      name: employee.name,
+      fiscalCode: employee.fiscalCode,
+      email: employee.email,
+      phone: employee.phone,
+      contractEnd: employee.contractEnd ?? '',
+    })
+  }, [employee])
 
   const set = (field) => (value) => setForm(prev => ({ ...prev, [field]: value }))
 
@@ -52,15 +65,21 @@ export default function EmployeeSheet({ employee, onSave, onClose }) {
     return Object.keys(e).length === 0
   }
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!validate()) return
-    onSave({
-      name: form.name.trim(),
-      fiscalCode: form.fiscalCode.trim().toUpperCase(),
-      email: form.email.trim().toLowerCase(),
-      phone: form.phone.trim(),
-      contractEnd: form.contractEnd,
-    })
+
+    setSubmitting(true)
+    try {
+      await onSave({
+        name: form.name.trim(),
+        fiscalCode: form.fiscalCode.trim().toUpperCase(),
+        email: form.email.trim().toLowerCase(),
+        phone: form.phone.trim(),
+        contractEnd: form.contractEnd,
+      })
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -97,12 +116,18 @@ export default function EmployeeSheet({ employee, onSave, onClose }) {
             <Input value={form.contractEnd} onChange={set('contractEnd')} type="date" />
             <p className="text-slate-400 text-xs mt-1">Lascia vuoto se a tempo indeterminato</p>
           </Field>
+
+          {saveError && (
+            <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              {saveError}
+            </div>
+          )}
         </div>
 
         <SheetFooter className="mt-6 flex gap-2">
-          <Button variant="outline" onClick={onClose} className="flex-1 rounded-xl py-3 text-sm">Annulla</Button>
-          <Button onClick={handleSave} className="flex-1 rounded-xl py-3 text-sm bg-indigo-500 hover:bg-indigo-400 text-white">
-            Salva dati
+          <Button variant="outline" onClick={onClose} disabled={submitting} className="flex-1 rounded-xl py-3 text-sm">Annulla</Button>
+          <Button onClick={handleSave} disabled={submitting} className="flex-1 rounded-xl py-3 text-sm bg-indigo-500 hover:bg-indigo-400 text-white disabled:opacity-70">
+            {submitting ? 'Salvataggio...' : 'Salva dati'}
           </Button>
         </SheetFooter>
       </SheetContent>

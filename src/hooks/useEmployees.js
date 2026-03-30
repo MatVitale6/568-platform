@@ -13,7 +13,8 @@
  * TODO: sostituire stato locale con chiamate Supabase
  */
 
-import { useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
+import { isSupabaseConfigured, supabase } from '@/lib/supabase'
 
 // Palette colori vivaci da assegnare in sequenza
 const COLOR_PALETTE = [
@@ -37,32 +38,183 @@ const INITIAL_EMPLOYEES = [
 ]
 
 export function useEmployees() {
-  const [employees, setEmployees] = useState(INITIAL_EMPLOYEES)
+  const [employees, setEmployees] = useState(isSupabaseConfigured ? [] : INITIAL_EMPLOYEES)
+  const [loading, setLoading] = useState(isSupabaseConfigured)
+  const [error, setError] = useState('')
 
-  const addEmployee = (data) => {
-    const color = getNextColor(employees)
-    const newEmp = {
-      id: Date.now().toString(),
-      ...data,
-      color,
-      invited: false,
+  const loadEmployees = useCallback(async () => {
+    if (!isSupabaseConfigured || !supabase) {
+      setLoading(false)
+      return
     }
-    setEmployees(prev => [...prev, newEmp])
-    return newEmp
+
+    setLoading(true)
+    setError('')
+    setEmployees([])
+
+    const { data, error: loadError } = await supabase
+      .from('profiles')
+      .select('id, full_name, email, role, color, employees!inner(fiscal_code, phone, contract_end, invited)')
+      .order('created_at', { ascending: true })
+
+    if (loadError) {
+      setError(loadError.message)
+      setLoading(false)
+      return
+    }
+
+    const mapped = (data ?? []).map((row) => {
+      const employeeRow = Array.isArray(row.employees) ? row.employees[0] : row.employees
+
+      return {
+      id: row.id,
+      name: row.full_name,
+      email: row.email,
+      role: row.role,
+      color: row.color,
+      fiscalCode: employeeRow?.fiscal_code ?? '',
+      phone: employeeRow?.phone ?? '',
+      contractEnd: employeeRow?.contract_end ?? '',
+      invited: employeeRow?.invited ?? false,
+      }
+    })
+
+    setEmployees(mapped)
+    setLoading(false)
+  }, [])
+
+  useEffect(() => {
+    loadEmployees()
+  }, [loadEmployees])
+
+  const addEmployee = async (data) => {
+    const color = getNextColor(employees)
+    if (!isSupabaseConfigured || !supabase) {
+      const newEmp = {
+        id: Date.now().toString(),
+        ...data,
+        color,
+        invited: false,
+      }
+      setEmployees(prev => [...prev, newEmp])
+      return newEmp
+    }
+
+    setError('')
+
+    const { data: profileRow, error: profileError } = await supabase
+      .from('profiles')
+      .insert({
+        full_name: data.name,
+        email: data.email,
+        role: 'employee',
+        color,
+        first_login_completed: false,
+      })
+      .select('id')
+      .single()
+
+    if (profileError) {
+      setError(profileError.message)
+      throw profileError
+    }
+
+    const { error: employeeError } = await supabase
+      .from('employees')
+      .insert({
+        profile_id: profileRow.id,
+        fiscal_code: data.fiscalCode,
+        phone: data.phone,
+        contract_end: data.contractEnd || null,
+        invited: false,
+      })
+
+    if (employeeError) {
+      setError(employeeError.message)
+      throw employeeError
+    }
+
+    await loadEmployees()
+    return profileRow
   }
 
-  const updateEmployee = (id, data) => {
-    setEmployees(prev => prev.map(e => e.id === id ? { ...e, ...data } : e))
+  const updateEmployee = async (id, data) => {
+    if (!isSupabaseConfigured || !supabase) {
+      setEmployees(prev => prev.map(e => e.id === id ? { ...e, ...data } : e))
+      return
+    }
+
+    setError('')
+
+    const { error: profileError } = await supabase
+      .from('profiles')
+      .update({
+        full_name: data.name,
+        email: data.email,
+      })
+      .eq('id', id)
+
+    if (profileError) {
+      setError(profileError.message)
+      throw profileError
+    }
+
+    const { error: employeeError } = await supabase
+      .from('employees')
+      .update({
+        fiscal_code: data.fiscalCode,
+        phone: data.phone,
+        contract_end: data.contractEnd || null,
+      })
+      .eq('profile_id', id)
+
+    if (employeeError) {
+      setError(employeeError.message)
+      throw employeeError
+    }
+
+    await loadEmployees()
   }
 
-  const deleteEmployee = (id) => {
-    setEmployees(prev => prev.filter(e => e.id !== id))
+  const deleteEmployee = async (id) => {
+    if (!isSupabaseConfigured || !supabase) {
+      setEmployees(prev => prev.filter(e => e.id !== id))
+      return
+    }
+
+    setError('')
+    const { error: deleteError } = await supabase
+      .from('profiles')
+      .delete()
+      .eq('id', id)
+
+    if (deleteError) {
+      setError(deleteError.message)
+      throw deleteError
+    }
+
+    await loadEmployees()
   }
 
-  const sendInvite = (id) => {
-    // In futuro: chiama Supabase + invia email
-    setEmployees(prev => prev.map(e => e.id === id ? { ...e, invited: true } : e))
+  const sendInvite = async (id) => {
+    if (!isSupabaseConfigured || !supabase) {
+      setEmployees(prev => prev.map(e => e.id === id ? { ...e, invited: true } : e))
+      return
+    }
+
+    setError('')
+    const { error: inviteError } = await supabase
+      .from('employees')
+      .update({ invited: true })
+      .eq('profile_id', id)
+
+    if (inviteError) {
+      setError(inviteError.message)
+      throw inviteError
+    }
+
+    await loadEmployees()
   }
 
-  return { employees, addEmployee, updateEmployee, deleteEmployee, sendInvite }
+  return { employees, loading, error, addEmployee, updateEmployee, deleteEmployee, sendInvite, reload: loadEmployees }
 }
