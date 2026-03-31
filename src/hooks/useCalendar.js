@@ -10,6 +10,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { isSupabaseConfigured, supabase } from '@/lib/supabase'
 
+const CALENDAR_REFRESH_MS = 15000
+
 function getMondayOfWeek(date) {
   const d = new Date(date)
   const day = d.getDay()
@@ -170,6 +172,41 @@ export function useCalendar(currentUser) {
   useEffect(() => {
     reloadCalendar()
   }, [reloadCalendar])
+
+  useEffect(() => {
+    if (!isSupabaseConfigured || !supabase || !currentUser?.id) {
+      return undefined
+    }
+
+    const reloadSilently = () => {
+      reloadCalendar()
+    }
+
+    const intervalId = window.setInterval(reloadSilently, CALENDAR_REFRESH_MS)
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        reloadSilently()
+      }
+    }
+
+    window.addEventListener('focus', handleVisibilityChange)
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+
+    const channel = supabase
+      .channel(`calendar-${currentUser.id}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'shifts' }, reloadSilently)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'shift_assignments' }, reloadSilently)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'swap_requests' }, reloadSilently)
+      .subscribe()
+
+    return () => {
+      window.clearInterval(intervalId)
+      window.removeEventListener('focus', handleVisibilityChange)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+      supabase.removeChannel(channel)
+    }
+  }, [currentUser?.id, reloadCalendar])
 
   const getShiftForDay = (date) => {
     const key = formatDateKey(date)

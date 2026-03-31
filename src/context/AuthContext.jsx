@@ -11,6 +11,16 @@ import { createContext, useContext, useEffect, useState } from 'react'
 import { isSupabaseConfigured, supabase } from '@/lib/supabase'
 
 const AuthContext = createContext(null)
+const AUTH_TIMEOUT_MS = 10000
+
+function withTimeout(promise, timeoutMs, errorMessage) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => {
+      window.setTimeout(() => reject(new Error(errorMessage)), timeoutMs)
+    }),
+  ])
+}
 
 function mapMockUser(userData) {
   return userData
@@ -33,20 +43,28 @@ function mapSupabaseUser(authUser, profile) {
 async function getProfileForUser(userId) {
   if (!isSupabaseConfigured || !supabase) return null
 
-  const { data: byAuthUserId, error: byAuthUserIdError } = await supabase
-    .from('profiles')
-    .select('id, auth_user_id, full_name, email, role, color, first_login_completed')
-    .eq('auth_user_id', userId)
-    .maybeSingle()
+  const { data: byAuthUserId, error: byAuthUserIdError } = await withTimeout(
+    supabase
+      .from('profiles')
+      .select('id, auth_user_id, full_name, email, role, color, first_login_completed')
+      .eq('auth_user_id', userId)
+      .maybeSingle(),
+    AUTH_TIMEOUT_MS,
+    'Timeout caricamento profilo',
+  )
 
   if (byAuthUserIdError) throw byAuthUserIdError
   if (byAuthUserId) return byAuthUserId
 
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('id, auth_user_id, full_name, email, role, color, first_login_completed')
-    .eq('id', userId)
-    .maybeSingle()
+  const { data, error } = await withTimeout(
+    supabase
+      .from('profiles')
+      .select('id, auth_user_id, full_name, email, role, color, first_login_completed')
+      .eq('id', userId)
+      .maybeSingle(),
+    AUTH_TIMEOUT_MS,
+    'Timeout caricamento profilo',
+  )
 
   if (error) throw error
   return data
@@ -65,18 +83,29 @@ export function AuthProvider({ children }) {
     let mounted = true
 
     const bootstrap = async () => {
-      const { data, error } = await supabase.auth.getSession()
-      if (error) {
-        if (mounted) setLoading(false)
-        return
-      }
+      try {
+        const { data, error } = await withTimeout(
+          supabase.auth.getSession(),
+          AUTH_TIMEOUT_MS,
+          'Timeout recupero sessione',
+        )
 
-      if (data.session?.user) {
-        try {
-          const profile = await getProfileForUser(data.session.user.id)
-          if (mounted) setUser(mapSupabaseUser(data.session.user, profile))
-        } catch {
-          if (mounted) setUser(mapSupabaseUser(data.session.user, null))
+        if (error) {
+          if (mounted) setLoading(false)
+          return
+        }
+
+        if (data.session?.user) {
+          try {
+            const profile = await getProfileForUser(data.session.user.id)
+            if (mounted) setUser(mapSupabaseUser(data.session.user, profile))
+          } catch {
+            if (mounted) setUser(mapSupabaseUser(data.session.user, null))
+          }
+        }
+      } catch {
+        if (mounted) {
+          setUser(null)
         }
       }
 
@@ -90,7 +119,7 @@ export function AuthProvider({ children }) {
 
       if (!session?.user) {
         setUser(null)
-        setLoading(false)
+        if (mounted) setLoading(false)
         return
       }
 

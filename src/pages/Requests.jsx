@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useAuth } from '@/context/AuthContext'
 import { useRequests } from '@/context/RequestsContext'
+import { usePushNotifications, isWebPushConfigured } from '@/hooks/usePushNotifications'
 
 const STATUS_STYLES = {
   pending: 'bg-amber-50 text-amber-700 border-amber-200',
@@ -17,6 +18,7 @@ function formatDate(dateStr) {
 export default function Requests() {
   const { user } = useAuth()
   const { requests, loading, error, respondToSwapRequest } = useRequests()
+  const push = usePushNotifications()
   const [actionError, setActionError] = useState('')
   const [busyId, setBusyId] = useState(null)
 
@@ -37,6 +39,61 @@ export default function Requests() {
       <div className="bg-white border-b border-slate-200 px-4 py-3">
         <p className="font-bold text-slate-800">Richieste cambio</p>
         <p className="text-xs text-slate-400 mt-0.5">Storico e notifiche in-app</p>
+      </div>
+
+      <div className="bg-white px-4 py-4 border-b border-slate-100">
+        <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 space-y-3">
+          <div>
+            <p className="font-semibold text-slate-800">Notifiche browser</p>
+            <p className="text-sm text-slate-500 mt-1">
+              Ricevi una notifica quando arriva una richiesta o quando la tua richiesta viene accettata o rifiutata.
+            </p>
+          </div>
+
+          {push.availability === 'unsupported' && (
+            <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
+              Questo browser non supporta Web Push.
+            </p>
+          )}
+
+          {push.availability === 'vapid-missing' && (
+            <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
+              Configura `VITE_VAPID_PUBLIC_KEY` per attivare le notifiche push.
+            </p>
+          )}
+
+          {push.error && (
+            <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-xl px-3 py-2">
+              {push.error}
+            </p>
+          )}
+
+          {push.availability === 'ready' && (
+            <div className="flex gap-2">
+              {push.enabled ? (
+                <button
+                  onClick={push.disable}
+                  disabled={push.loading}
+                  className="flex-1 rounded-xl border border-slate-200 bg-white py-3 text-sm font-semibold text-slate-700 hover:bg-slate-100 disabled:opacity-70"
+                >
+                  {push.loading ? 'Aggiornamento...' : 'Disattiva notifiche'}
+                </button>
+              ) : (
+                <button
+                  onClick={push.enable}
+                  disabled={push.loading}
+                  className="flex-1 rounded-xl border border-indigo-200 bg-indigo-50 py-3 text-sm font-semibold text-indigo-700 hover:bg-indigo-100 disabled:opacity-70"
+                >
+                  {push.loading ? 'Attivazione...' : 'Attiva notifiche'}
+                </button>
+              )}
+            </div>
+          )}
+
+          <p className="text-xs text-slate-400">
+            Stato browser: {push.permission}. {isWebPushConfigured ? 'VAPID configurato.' : 'VAPID non configurato.'}
+          </p>
+        </div>
       </div>
 
       {(error || actionError) && (

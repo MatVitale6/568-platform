@@ -3,6 +3,16 @@ import { useAuth } from '@/context/AuthContext'
 import { isSupabaseConfigured, supabase } from '@/lib/supabase'
 
 const RequestsContext = createContext(null)
+const REQUESTS_TIMEOUT_MS = 10000
+
+function withTimeout(promise, timeoutMs, errorMessage) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => {
+      window.setTimeout(() => reject(new Error(errorMessage)), timeoutMs)
+    }),
+  ])
+}
 
 function normalizeRequest(row) {
   return {
@@ -31,6 +41,34 @@ function normalizeRequest(row) {
   }
 }
 
+async function sendPushNotification({ profileIds, title, body, url }) {
+  if (!isSupabaseConfigured || !supabase || !Array.isArray(profileIds) || profileIds.length === 0) {
+    return
+  }
+
+  try {
+    const { data, error } = await supabase.functions.invoke('send-push', {
+      body: {
+        profileIds,
+        title,
+        body,
+        url,
+      },
+    })
+
+    if (error) {
+      console.warn('send-push invoke error', error)
+      return
+    }
+
+    if (data?.failedCount) {
+      console.warn('send-push partial failure', data)
+    }
+  } catch {
+    // Non blocchiamo il flusso applicativo se la notifica esterna fallisce.
+  }
+}
+
 export function RequestsProvider({ children }) {
   const { user, loading: authLoading } = useAuth()
   const [requests, setRequests] = useState([])
@@ -48,8 +86,10 @@ export function RequestsProvider({ children }) {
 
     let mounted = true
 
-    const loadRequests = async () => {
-      setLoading(true)
+    const loadRequests = async ({ silent = false } = {}) => {
+      if (!silent) {
+        setLoading(true)
+      }
       setError('')
 
       let query = supabase
@@ -72,31 +112,64 @@ export function RequestsProvider({ children }) {
         query = query.or(`requester_id.eq.${user.id},target_employee_id.eq.${user.id}`)
       }
 
-      const { data, error: loadError } = await query
+      let data
+      let loadError
+
+      try {
+        const result = await withTimeout(query, REQUESTS_TIMEOUT_MS, 'Timeout caricamento richieste')
+        data = result.data
+        loadError = result.error
+      } catch (timeoutError) {
+        setError(timeoutError.message)
+        if (!silent) {
+          setLoading(false)
+        }
+        return
+      }
 
       if (!mounted) return
 
       if (loadError) {
         setError(loadError.message)
-        setLoading(false)
+        if (!silent) {
+          setLoading(false)
+        }
         return
       }
 
       setRequests((data ?? []).map(normalizeRequest))
-      setLoading(false)
+      if (!silent) {
+        setLoading(false)
+      }
     }
 
     loadRequests()
 
+    const intervalId = window.setInterval(() => {
+      loadRequests({ silent: true })
+    }, 15000)
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        loadRequests({ silent: true })
+      }
+    }
+
+    window.addEventListener('focus', handleVisibilityChange)
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+
     const channel = supabase
       .channel(`swap-requests-${user.id}-${user.role}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'swap_requests' }, () => {
-        loadRequests()
+        loadRequests({ silent: true })
       })
       .subscribe()
 
     return () => {
       mounted = false
+      window.clearInterval(intervalId)
+      window.removeEventListener('focus', handleVisibilityChange)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
       supabase.removeChannel(channel)
     }
   }, [authLoading, user])
@@ -127,7 +200,11 @@ export function RequestsProvider({ children }) {
       query = query.or(`requester_id.eq.${user.id},target_employee_id.eq.${user.id}`)
     }
 
-    const { data, error: loadError } = await query
+    const { data, error: loadError } = await withTimeout(
+      query,
+      REQUESTS_TIMEOUT_MS,
+      'Timeout caricamento richieste',
+    )
 
     if (loadError) {
       setError(loadError.message)
@@ -154,6 +231,13 @@ export function RequestsProvider({ children }) {
       throw rpcError
     }
 
+    await sendPushNotification({
+      profileIds: [targetEmployeeId],
+      title: 'Nuova richiesta cambio turno',
+      body: `${user.name} ti ha inviato una richiesta di cambio turno`,
+      url: '/requests',
+    })
+
     await reloadRequests()
   }
 
@@ -161,6 +245,7 @@ export function RequestsProvider({ children }) {
     if (!user || !isSupabaseConfigured || !supabase) return
 
     setError('')
+    const request = requests.find((item) => item.id === requestId)
     const { error: rpcError } = await supabase.rpc('respond_to_swap_request', {
       p_swap_request_id: requestId,
       p_decision: decision,
@@ -169,6 +254,15 @@ export function RequestsProvider({ children }) {
     if (rpcError) {
       setError(rpcError.message)
       throw rpcError
+    }
+
+    if (request?.requesterId) {
+      await sendPushNotification({
+        profileIds: [request.requesterId],
+        title: decision === 'accepted' ? 'Richiesta accettata' : 'Richiesta rifiutata',
+        body: `${user.name} ha ${decision === 'accepted' ? 'accettato' : 'rifiutato'} la tua richiesta di cambio turno`,
+        url: '/requests',
+      })
     }
 
     await reloadRequests()

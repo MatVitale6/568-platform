@@ -23,6 +23,7 @@ Private web app for weekly shift planning.
 - Copy one week across a date range
 - In-app swap requests page with pending badge
 - Accept / reject swap requests inside the web app
+- Web Push subscription UI and service worker base
 - Closed days handling
 - Swap request creation
 - Mobile-first layout
@@ -88,6 +89,16 @@ Then create the first auth user in Supabase Authentication and run [supabase/boo
 
 To enable the full swap-request workflow, run [supabase/swap_request_workflow.sql](supabase/swap_request_workflow.sql) in the Supabase SQL Editor as well.
 
+To enable Web Push subscriptions, run [supabase/push_notifications.sql](supabase/push_notifications.sql) in the Supabase SQL Editor.
+
+If you already enabled push notifications before this fix, also run [supabase/push_notifications.sql](supabase/push_notifications.sql) again so the RPC helpers for subscription registration are created.
+
+To send push notifications, deploy the Edge Function in [supabase/functions/send-push/index.ts](supabase/functions/send-push/index.ts) and configure these secrets in Supabase Functions:
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `VAPID_PUBLIC_KEY`
+- `VAPID_PRIVATE_KEY`
+- `VAPID_SUBJECT`
+
 ## Data model
 
 ### Tables
@@ -106,3 +117,4 @@ To enable the full swap-request workflow, run [supabase/swap_request_workflow.sq
 
 - `.env.local` is ignored and must never be committed
 - The app still has mock fallback paths, but the main employee and calendar flows now work with Supabase
+- Web Push also requires `VITE_VAPID_PUBLIC_KEY` in `.env.local`
