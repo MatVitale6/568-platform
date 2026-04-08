@@ -133,6 +133,48 @@ export function usePushNotifications() {
     }
   }
 
+  // Register without prompting if permission already granted
+  const registerIfGranted = async () => {
+    if (!user || availability !== 'ready') return
+    if (Notification.permission !== 'granted') return
+
+    setLoading(true)
+    setError('')
+
+    try {
+      const registration = await navigator.serviceWorker.register(pushServiceWorkerPath, {
+        updateViaCache: 'none',
+      })
+      await registration.update()
+
+      let subscription = await registration.pushManager.getSubscription()
+
+      if (!subscription) {
+        subscription = await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
+        })
+      }
+
+      const subscriptionJson = subscription.toJSON()
+
+      const { error: registerError } = await supabase.rpc('register_push_subscription', {
+        p_endpoint: subscription.endpoint,
+        p_p256dh: subscriptionJson.keys?.p256dh,
+        p_auth: subscriptionJson.keys?.auth,
+        p_user_agent: navigator.userAgent,
+      })
+
+      if (registerError) throw registerError
+      setEnabled(true)
+    } catch (e) {
+      // Non blocchiamo il flusso se fallisce
+      setError(e?.message || 'Registrazione subscription non riuscita')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const disable = async () => {
     if (!user || !isSupabaseConfigured || !supabase) return
 
@@ -163,6 +205,35 @@ export function usePushNotifications() {
       setLoading(false)
     }
   }
+
+  // Listen to global app login/logout events so AuthContext can trigger registration/unsubscribe
+  useEffect(() => {
+    const onAppLogout = () => {
+      // try best-effort to unsubscribe on logout
+      try {
+        disable().catch(() => {})
+      } catch {
+        // ignore
+      }
+    }
+
+    const onAppLogin = () => {
+      // only register silently if permission already granted
+      try {
+        registerIfGranted().catch(() => {})
+      } catch {
+        // ignore
+      }
+    }
+
+    window.addEventListener('app:logout', onAppLogout)
+    window.addEventListener('app:login', onAppLogin)
+
+    return () => {
+      window.removeEventListener('app:logout', onAppLogout)
+      window.removeEventListener('app:login', onAppLogin)
+    }
+  }, [user, availability])
 
   return {
     availability,

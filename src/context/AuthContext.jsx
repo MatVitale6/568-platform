@@ -99,8 +99,10 @@ export function AuthProvider({ children }) {
           try {
             const profile = await getProfileForUser(data.session.user.id)
             if (mounted) setUser(mapSupabaseUser(data.session.user, profile))
+            if (mounted) window.dispatchEvent(new Event('app:login'))
           } catch {
             if (mounted) setUser(mapSupabaseUser(data.session.user, null))
+            if (mounted) window.dispatchEvent(new Event('app:login'))
           }
         }
       } catch {
@@ -114,10 +116,12 @@ export function AuthProvider({ children }) {
 
     bootstrap()
 
-    const { data: listener } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      const { data: listener } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (!mounted) return
 
       if (!session?.user) {
+        // notify listeners before clearing user so they can access current user info
+        window.dispatchEvent(new Event('app:logout'))
         setUser(null)
         if (mounted) setLoading(false)
         return
@@ -126,8 +130,10 @@ export function AuthProvider({ children }) {
       try {
         const profile = await getProfileForUser(session.user.id)
         setUser(mapSupabaseUser(session.user, profile))
+        window.dispatchEvent(new Event('app:login'))
       } catch {
         setUser(mapSupabaseUser(session.user, null))
+        window.dispatchEvent(new Event('app:login'))
       }
       setLoading(false)
     })
@@ -151,10 +157,13 @@ export function AuthProvider({ children }) {
     const profile = await getProfileForUser(data.user.id)
     const mappedUser = mapSupabaseUser(data.user, profile)
     setUser(mappedUser)
+    window.dispatchEvent(new Event('app:login'))
     return mappedUser
   }
 
   const logout = async () => {
+    // notify subscription handlers before clearing user + signing out
+    try { window.dispatchEvent(new Event('app:logout')) } catch {}
     if (isSupabaseConfigured && supabase) {
       await supabase.auth.signOut()
     }
