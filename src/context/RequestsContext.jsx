@@ -145,10 +145,6 @@ export function RequestsProvider({ children }) {
 
     loadRequests()
 
-    const intervalId = window.setInterval(() => {
-      loadRequests({ silent: true })
-    }, 15000)
-
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
         loadRequests({ silent: true })
@@ -167,7 +163,6 @@ export function RequestsProvider({ children }) {
 
     return () => {
       mounted = false
-      window.clearInterval(intervalId)
       window.removeEventListener('focus', handleVisibilityChange)
       document.removeEventListener('visibilitychange', handleVisibilityChange)
       supabase.removeChannel(channel)

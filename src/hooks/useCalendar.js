@@ -10,8 +10,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { isSupabaseConfigured, supabase } from '@/lib/supabase'
 
-const CALENDAR_REFRESH_MS = 15000
-
 function getMondayOfWeek(date) {
   const d = new Date(date)
   const day = d.getDay()
@@ -182,8 +180,6 @@ export function useCalendar(currentUser) {
       reloadCalendar()
     }
 
-    const intervalId = window.setInterval(reloadSilently, CALENDAR_REFRESH_MS)
-
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
         reloadSilently()
@@ -201,7 +197,6 @@ export function useCalendar(currentUser) {
       .subscribe()
 
     return () => {
-      window.clearInterval(intervalId)
       window.removeEventListener('focus', handleVisibilityChange)
       document.removeEventListener('visibilitychange', handleVisibilityChange)
       supabase.removeChannel(channel)

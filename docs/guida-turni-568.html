@@ -1,0 +1,1840 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Turni 568 — Linee Guida</title>
+<style>
+  :root {
+    --indigo: #4f46e5;
+    --indigo-light: #6366f1;
+    --slate-900: #0f172a;
+    --slate-800: #1e293b;
+    --slate-700: #334155;
+    --slate-600: #475569;
+    --slate-400: #94a3b8;
+    --slate-200: #e2e8f0;
+    --slate-100: #f1f5f9;
+    --slate-50: #f8fafc;
+    --green: #10b981;
+    --amber: #f59e0b;
+    --red: #ef4444;
+    --white: #ffffff;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    font-size: 10.5pt;
+    color: var(--slate-800);
+    background: white;
+    line-height: 1.55;
+  }
+
+  /* ── Cover page ── */
+  .cover {
+    page-break-after: always;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background: var(--slate-900);
+    color: white;
+    text-align: center;
+    padding: 60px 40px;
+  }
+
+  .cover-logo {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    border: 3px solid rgba(255,255,255,0.15);
+    margin-bottom: 28px;
+    object-fit: contain;
+    background: white;
+    padding: 6px;
+  }
+
+  .cover h1 {
+    font-size: 28pt;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    margin-bottom: 8px;
+  }
+
+  .cover .cover-subtitle {
+    font-size: 13pt;
+    color: rgba(255,255,255,0.55);
+    margin-bottom: 40px;
+  }
+
+  .cover-divider {
+    width: 60px;
+    height: 3px;
+    background: var(--indigo-light);
+    border-radius: 2px;
+    margin: 0 auto 32px;
+  }
+
+  .cover .cover-desc {
+    font-size: 11pt;
+    color: rgba(255,255,255,0.7);
+    max-width: 420px;
+    line-height: 1.7;
+    margin-bottom: 48px;
+  }
+
+  .cover-meta {
+    font-size: 9pt;
+    color: rgba(255,255,255,0.3);
+  }
+
+  /* ── ToC ── */
+  .toc-page {
+    page-break-after: always;
+    padding: 50px 50px;
+  }
+
+  .toc-page h2 {
+    font-size: 16pt;
+    font-weight: 800;
+    color: var(--slate-900);
+    margin-bottom: 28px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--slate-200);
+  }
+
+  .toc-section {
+    margin-bottom: 20px;
+  }
+
+  .toc-section-title {
+    font-size: 10.5pt;
+    font-weight: 700;
+    color: var(--indigo);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .toc-items {
+    list-style: none;
+    padding-left: 14px;
+  }
+
+  .toc-items li {
+    font-size: 10pt;
+    color: var(--slate-600);
+    line-height: 2;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .toc-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--slate-400);
+    flex-shrink: 0;
+  }
+
+  /* ── Chapter headers ── */
+  .chapter {
+    page-break-before: always;
+    padding: 50px 50px 0;
+  }
+
+  .chapter:first-of-type {
+    page-break-before: auto;
+  }
+
+  .chapter-badge {
+    display: inline-block;
+    background: var(--indigo);
+    color: white;
+    font-size: 8pt;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 12px;
+  }
+
+  .chapter-badge.admin {
+    background: var(--slate-800);
+  }
+
+  .chapter-badge.tech {
+    background: #7c3aed;
+  }
+
+  .chapter h2 {
+    font-size: 20pt;
+    font-weight: 800;
+    color: var(--slate-900);
+    margin-bottom: 6px;
+    line-height: 1.2;
+  }
+
+  .chapter .chapter-intro {
+    font-size: 10.5pt;
+    color: var(--slate-600);
+    margin-bottom: 28px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--slate-200);
+  }
+
+  /* ── Page body ── */
+  .page-body {
+    padding: 24px 50px 40px;
+  }
+
+  /* ── Section ── */
+  .section {
+    margin-bottom: 28px;
+  }
+
+  .section h3 {
+    font-size: 12pt;
+    font-weight: 700;
+    color: var(--slate-900);
+    margin-bottom: 10px;
+    padding-left: 12px;
+    border-left: 3px solid var(--indigo-light);
+  }
+
+  .section h4 {
+    font-size: 10.5pt;
+    font-weight: 600;
+    color: var(--slate-700);
+    margin: 14px 0 6px;
+  }
+
+  .section p {
+    color: var(--slate-600);
+    margin-bottom: 8px;
+    font-size: 10pt;
+  }
+
+  /* ── Steps ── */
+  .steps {
+    counter-reset: step-counter;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .steps li {
+    counter-increment: step-counter;
+    display: flex;
+    gap: 12px;
+    margin-bottom: 14px;
+    align-items: flex-start;
+  }
+
+  .steps li::before {
+    content: counter(step-counter);
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--indigo);
+    color: white;
+    font-size: 9pt;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 1px;
+  }
+
+  .steps li .step-content {
+    flex: 1;
+  }
+
+  .steps li .step-title {
+    font-weight: 600;
+    color: var(--slate-800);
+    font-size: 10pt;
+  }
+
+  .steps li .step-desc {
+    font-size: 9.5pt;
+    color: var(--slate-600);
+    margin-top: 2px;
+  }
+
+  /* ── Info box ── */
+  .info-box {
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 14px;
+    font-size: 9.5pt;
+  }
+
+  .info-box.blue {
+    background: #eff6ff;
+    border-left: 3px solid #3b82f6;
+    color: #1e40af;
+  }
+
+  .info-box.green {
+    background: #f0fdf4;
+    border-left: 3px solid var(--green);
+    color: #166534;
+  }
+
+  .info-box.amber {
+    background: #fffbeb;
+    border-left: 3px solid var(--amber);
+    color: #92400e;
+  }
+
+  .info-box.red {
+    background: #fef2f2;
+    border-left: 3px solid var(--red);
+    color: #991b1b;
+  }
+
+  .info-box strong {
+    display: block;
+    margin-bottom: 2px;
+  }
+
+  /* ── Feature grid ── */
+  .feature-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .feature-card {
+    border: 1px solid var(--slate-200);
+    border-radius: 8px;
+    padding: 12px 14px;
+    background: var(--slate-50);
+  }
+
+  .feature-card .fc-icon {
+    font-size: 16pt;
+    margin-bottom: 6px;
+  }
+
+  .feature-card .fc-title {
+    font-size: 10pt;
+    font-weight: 700;
+    color: var(--slate-800);
+    margin-bottom: 3px;
+  }
+
+  .feature-card .fc-desc {
+    font-size: 9pt;
+    color: var(--slate-600);
+    line-height: 1.5;
+  }
+
+  /* ── Table ── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 16px;
+    font-size: 9.5pt;
+  }
+
+  th {
+    background: var(--slate-800);
+    color: white;
+    padding: 8px 12px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 9pt;
+  }
+
+  td {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--slate-200);
+    color: var(--slate-700);
+    vertical-align: top;
+  }
+
+  tr:nth-child(even) td {
+    background: var(--slate-50);
+  }
+
+  /* ── Role badge ── */
+  .role-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 8pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .role-badge.admin { background: #dbeafe; color: #1e40af; }
+  .role-badge.employee { background: #dcfce7; color: #166534; }
+  .role-badge.both { background: #f3e8ff; color: #6b21a8; }
+
+  /* ── Status badge ── */
+  .status-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 8pt;
+    font-weight: 700;
+  }
+
+  .status-badge.pending { background: #fef9c3; color: #854d0e; }
+  .status-badge.accepted { background: #dcfce7; color: #166534; }
+  .status-badge.rejected { background: #fee2e2; color: #991b1b; }
+  .status-badge.cancelled { background: #f1f5f9; color: #475569; }
+
+  /* ── Checklist ── */
+  .checklist {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .checklist li {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    margin-bottom: 8px;
+    font-size: 10pt;
+    color: var(--slate-700);
+  }
+
+  .checklist li::before {
+    content: '✓';
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+    background: var(--green);
+    color: white;
+    border-radius: 4px;
+    font-size: 9pt;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 1px;
+  }
+
+  .checklist li.warn::before {
+    content: '!';
+    background: var(--amber);
+  }
+
+  .checklist li.cross::before {
+    content: '✕';
+    background: var(--red);
+  }
+
+  /* ── Code block ── */
+  .code-block {
+    background: var(--slate-900);
+    color: #a5f3fc;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 9pt;
+    margin-bottom: 14px;
+    line-height: 1.7;
+  }
+
+  .code-block .comment { color: #64748b; }
+  .code-block .key { color: #818cf8; }
+  .code-block .value { color: #86efac; }
+
+  /* ── Architecture diagram ── */
+  .arch-diagram {
+    border: 1px solid var(--slate-200);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 16px;
+    background: var(--slate-50);
+    font-family: 'Consolas', monospace;
+    font-size: 9pt;
+    line-height: 1.8;
+    color: var(--slate-700);
+  }
+
+  .arch-layer {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 2px;
+  }
+
+  .arch-box {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-weight: 600;
+    font-size: 8.5pt;
+    font-family: 'Segoe UI', Arial, sans-serif;
+  }
+
+  .arch-box.client { background: #dbeafe; color: #1e3a8a; }
+  .arch-box.host { background: #f3e8ff; color: #4c1d95; }
+  .arch-box.bff { background: #dcfce7; color: #14532d; }
+  .arch-box.db { background: #fed7aa; color: #7c2d12; }
+  .arch-box.push { background: #fce7f3; color: #831843; }
+
+  .arch-arrow { color: var(--slate-400); font-size: 10pt; }
+
+  /* ── Security table ── */
+  .sec-row-ok td:first-child { border-left: 3px solid var(--green); }
+  .sec-row-warn td:first-child { border-left: 3px solid var(--amber); }
+  .sec-row-risk td:first-child { border-left: 3px solid var(--red); }
+
+  /* ── Footer ── */
+  @page {
+    margin: 0;
+  }
+
+  .page-footer {
+    position: fixed;
+    bottom: 24px;
+    left: 50px;
+    right: 50px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 8pt;
+    color: var(--slate-400);
+    border-top: 1px solid var(--slate-200);
+    padding-top: 8px;
+  }
+
+  /* ── Print ── */
+  @media print {
+    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+
+  /* ── Utility ── */
+  .mt-2 { margin-top: 8px; }
+  .mt-4 { margin-top: 16px; }
+  .mb-0 { margin-bottom: 0; }
+  .text-muted { color: var(--slate-400); font-size: 9pt; }
+  .bold { font-weight: 700; }
+  .divider { height: 1px; background: var(--slate-200); margin: 20px 0; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════ COVER -->
+<div class="cover">
+  <img src="../public/logo.png" class="cover-logo" alt="Birreria 568 Garbatella" />
+  <h1>Turni 568</h1>
+  <p class="cover-subtitle">Birreria 568 Garbatella · Pianificazione turni</p>
+  <div class="cover-divider"></div>
+  <p class="cover-desc">
+    Documentazione completa del sistema: analisi architetturale,
+    linee guida per l'utilizzo lato utente e lato amministratore.
+  </p>
+  <p class="cover-meta">Versione 1.0 · Aprile 2026</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ TOC -->
+<div class="toc-page">
+  <h2>Indice</h2>
+
+  <div class="toc-section">
+    <div class="toc-section-title">Parte I — Analisi tecnica</div>
+    <ul class="toc-items">
+      <li><span class="toc-dot"></span>1. Panoramica architetturale</li>
+      <li><span class="toc-dot"></span>2. Struttura del progetto</li>
+      <li><span class="toc-dot"></span>3. Dipendenze esterne</li>
+      <li><span class="toc-dot"></span>4. Schema del database</li>
+      <li><span class="toc-dot"></span>5. Flusso dati e comunicazione</li>
+      <li><span class="toc-dot"></span>6. Sistema notifiche push</li>
+      <li><span class="toc-dot"></span>7. Analisi della sicurezza</li>
+    </ul>
+  </div>
+
+  <div class="toc-section">
+    <div class="toc-section-title">Parte II — Guida utente (Dipendente)</div>
+    <ul class="toc-items">
+      <li><span class="toc-dot"></span>8. Primo accesso</li>
+      <li><span class="toc-dot"></span>9. Visualizzare il calendario</li>
+      <li><span class="toc-dot"></span>10. Richiedere un cambio turno</li>
+      <li><span class="toc-dot"></span>11. Rispondere a una richiesta di cambio</li>
+      <li><span class="toc-dot"></span>12. Attivare le notifiche push</li>
+      <li><span class="toc-dot"></span>13. Installare l'app (PWA)</li>
+    </ul>
+  </div>
+
+  <div class="toc-section">
+    <div class="toc-section-title">Parte III — Guida amministratore</div>
+    <ul class="toc-items">
+      <li><span class="toc-dot"></span>14. Gestione dipendenti</li>
+      <li><span class="toc-dot"></span>15. Creazione e modifica turni</li>
+      <li><span class="toc-dot"></span>16. Copiare una settimana</li>
+      <li><span class="toc-dot"></span>17. Gestione richieste di cambio</li>
+      <li><span class="toc-dot"></span>18. Procedure operative consigliate</li>
+    </ul>
+  </div>
+
+  <div class="toc-section">
+    <div class="toc-section-title">Parte IV — Operazioni tecniche</div>
+    <ul class="toc-items">
+      <li><span class="toc-dot"></span>19. Deploy e variabili d'ambiente</li>
+      <li><span class="toc-dot"></span>20. Manutenzione ordinaria</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     PARTE I — ANALISI TECNICA
+════════════════════════════════════════════════════════════════════ -->
+
+<div class="chapter">
+  <div class="chapter-badge tech">Parte I · Analisi Tecnica</div>
+  <h2>1. Panoramica architetturale</h2>
+  <p class="chapter-intro">
+    Turni 568 è una Single Page Application (SPA) mobile-first progettata per la gestione
+    settimanale dei turni e delle richieste di cambio del personale di Birreria 568 Garbatella.
+  </p>
+</div>
+<div class="page-body">
+
+  <div class="section">
+    <h3>Stack tecnologico</h3>
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="fc-icon">⚛️</div>
+        <div class="fc-title">Frontend — React 19 + Vite 8</div>
+        <div class="fc-desc">SPA con React Router 7, Tailwind CSS 4, shadcn/ui components. Build ottimizzato da Vite con ESM nativo.</div>
+      </div>
+      <div class="feature-card">
+        <div class="fc-icon">🗄️</div>
+        <div class="fc-title">Backend — Supabase (BaaS)</div>
+        <div class="fc-desc">PostgreSQL hosted, Auth email/password, Row Level Security, Realtime WebSocket, Edge Functions (Deno).</div>
+      </div>
+      <div class="feature-card">
+        <div class="fc-icon">🚀</div>
+        <div class="fc-title">Hosting — Vercel</div>
+        <div class="fc-desc">CDN globale con HTTPS automatico, SPA rewrites, cache headers configurabili via vercel.json.</div>
+      </div>
+      <div class="feature-card">
+        <div class="fc-icon">🔔</div>
+        <div class="fc-title">Push — Web Push API</div>
+        <div class="fc-desc">Service Worker v3 (push-sw-v2.js), VAPID keys, protocollo RFC 8292. Notifiche su Android Chrome e desktop.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h3>Architettura a livelli</h3>
+    <div class="arch-diagram">
+      <div class="arch-layer">
+        <span class="arch-box client">Browser / PWA (Android, Desktop)</span>
+        <span class="arch-arrow">────────────────────────────────────</span>
+      </div>
+      <div class="arch-layer">
+        <span style="padding-left:20px; color:#94a3b8;">↓ HTTPS / WebSocket</span>
+      </div>
+      <div class="arch-layer">
+        <span class="arch-box host">Vercel CDN</span>
+        <span class="arch-arrow"> → </span>
+        <span class="arch-box client">React SPA (index.html + JS bundle)</span>
+      </div>
+      <div class="arch-layer">
+        <span style="padding-left:20px; color:#94a3b8;">↓ supabase-js (anon key + JWT)</span>
+      </div>
+      <div class="arch-layer">
+        <span class="arch-box bff">Supabase API Gateway</span>
+      </div>
+      <div class="arch-layer">
+        <span style="padding-left:20px; color:#94a3b8;">┌──────────────────────────────────────────┐</span>
+      </div>
+      <div class="arch-layer">
+        <span style="padding-left:20px;">
+          <span class="arch-box db">PostgreSQL + RLS</span>
+          <span style="margin:0 10px;">·</span>
+          <span class="arch-box bff">Auth (GoTrue)</span>
+          <span style="margin:0 10px;">·</span>
+          <span class="arch-box push">Edge Function: send-push</span>
+        </span>
+      </div>
+      <div class="arch-layer">
+        <span style="padding-left:20px; color:#94a3b8;">└──────────────────────────────────────────┘</span>
+      </div>
+      <div class="arch-layer">
+        <span style="padding-left:20px; color:#94a3b8;">↓ VAPID / Web Push Protocol</span>
+      </div>
+      <div class="arch-layer">
+        <span class="arch-box push">FCM (Android) / Web Push Service</span>
+        <span class="arch-arrow"> → </span>
+        <span class="arch-box client">Service Worker push-sw-v2.js</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ─── Section 2 ─── -->
+<div class="chapter">
+  <div class="chapter-badge tech">Parte I</div>
+  <h2>2. Struttura del progetto</h2>
+  <p class="chapter-intro">
+    La codebase è organizzata secondo la convenzione features-first con separazione netta tra
+    logica (hooks/context) e presentazione (pages/components).
+  </p>
+</div>
+<div class="page-body">
+
+  <div class="section">
+    <h3>Albero dei file principali</h3>
+    <div class="code-block">
+<span class="comment">568-platform/</span>
+├── <span class="key">src/</span>
+│   ├── <span class="value">App.jsx</span>                 <span class="comment">← Router, ProtectedRoute, AdminRoute</span>
+│   ├── <span class="key">context/</span>
+│   │   ├── <span class="value">AuthContext.jsx</span>      <span class="comment">← Sessione utente, login/logout</span>
+│   │   └── <span class="value">RequestsContext.jsx</span>  <span class="comment">← Richieste cambio, Realtime, Push</span>
+│   ├── <span class="key">hooks/</span>
+│   │   ├── <span class="value">useCalendar.js</span>       <span class="comment">← Turni CRUD, navigazione settimana</span>
+│   │   ├── <span class="value">useEmployees.js</span>      <span class="comment">← Anagrafica dipendenti CRUD</span>
+│   │   └── <span class="value">usePushNotifications.js</span> <span class="comment">← SW registration, subscribe/unsub</span>
+│   ├── <span class="key">pages/</span>
+│   │   ├── <span class="value">Login.jsx</span>            <span class="comment">← Form autenticazione</span>
+│   │   ├── <span class="value">Calendar.jsx</span>         <span class="comment">← Visualizzazione + editing turni</span>
+│   │   ├── <span class="value">Requests.jsx</span>         <span class="comment">← Lista richieste + toggle push</span>
+│   │   └── <span class="value">Employees.jsx</span>        <span class="comment">← Anagrafica (solo admin)</span>
+│   ├── <span class="key">components/</span>
+│   │   ├── <span class="value">Layout.jsx</span>           <span class="comment">← Header, bottom nav, logout</span>
+│   │   ├── <span class="key">calendar/</span>            <span class="comment">← DayRow, EmployeeBadge</span>
+│   │   ├── <span class="key">modals/</span>              <span class="comment">← ShiftModal, SwapModal, CopyWeekModal</span>
+│   │   └── <span class="key">employees/</span>           <span class="comment">← EmployeeSheet, DeleteConfirmDialog</span>
+│   └── <span class="key">lib/</span>
+│       ├── <span class="value">supabase.js</span>          <span class="comment">← Singleton client + isConfigured guard</span>
+│       └── <span class="value">utils.js</span>             <span class="comment">← cn(), formatters</span>
+├── <span class="key">public/</span>
+│   ├── <span class="value">push-sw-v2.js</span>            <span class="comment">← Service Worker notifiche</span>
+│   ├── <span class="value">manifest.webmanifest</span>     <span class="comment">← PWA manifest</span>
+│   └── <span class="value">logo.png / logo-badge.png</span> <span class="comment">← Logo Birreria 568</span>
+├── <span class="key">supabase/</span>
+│   ├── <span class="value">schema.sql</span>               <span class="comment">← Tabelle + RLS + trigger</span>
+│   ├── <span class="value">push_notifications.sql</span>   <span class="comment">← Tabella + RPC subscription</span>
+│   ├── <span class="value">swap_request_workflow.sql</span> <span class="comment">← RPC create/respond swap</span>
+│   └── <span class="key">functions/send-push/</span>
+│       └── <span class="value">index.ts</span>             <span class="comment">← Edge Function Deno (Web Push)</span>
+└── <span class="value">vercel.json</span>                  <span class="comment">← SPA rewrites + no-cache headers</span>
+    </div>
+  </div>
+
+  <div class="section">
+    <h3>Pattern architetturali applicati</h3>
+    <table>
+      <thead><tr><th>Pattern</th><th>Dove</th><th>Motivazione</th></tr></thead>
+      <tbody>
+        <tr><td>Context API (Provider pattern)</td><td>AuthContext, RequestsContext</td><td>Stato globale senza librerie esterne</td></tr>
+        <tr><td>Custom Hook</td><td>useCalendar, useEmployees, usePushNotifications</td><td>Separazione logica di business dalla UI</td></tr>
+        <tr><td>Guard Components</td><td>ProtectedRoute, AdminRoute</td><td>Protezione route lato client</td></tr>
+        <tr><td>Security Definer RPC</td><td>create_swap_request, respond_to_swap_request, register_push_subscription</td><td>Bypass RLS controllato lato server</td></tr>
+        <tr><td>Graceful Degradation</td><td>isSupabaseConfigured, mock data</td><td>Sviluppo offline senza backend</td></tr>
+        <tr><td>Optimistic / Timeout Guard</td><td>withTimeout() in AuthContext, RequestsContext</td><td>Prevenzione loop infinito su mobile</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<!-- ─── Section 3 ─── -->
+<div class="chapter">
+  <div class="chapter-badge tech">Parte I</div>
+  <h2>3. Dipendenze esterne</h2>
+  <p class="chapter-intro">Catalogo completo di librerie e servizi, con versione, ambito e livello di criticità.</p>
+</div>
+<div class="page-body">
+
+  <div class="section">
+    <h3>Dipendenze runtime (browser)</h3>
+    <table>
+      <thead><tr><th>Pacchetto</th><th>Versione</th><th>Ruolo</th><th>Criticità</th></tr></thead>
+      <tbody>
+        <tr><td>@supabase/supabase-js</td><td>2.100.1</td><td>Client DB, Auth, Realtime, Functions</td><td>🔴 Critico</td></tr>
+        <tr><td>react + react-dom</td><td>19.2.4</td><td>Framework UI</td><td>🔴 Critico</td></tr>
+        <tr><td>react-router-dom</td><td>7.13.2</td><td>Routing SPA</td><td>🔴 Critico</td></tr>
+        <tr><td>@base-ui/react</td><td>1.3.0</td><td>Dialog, Primitivi UI headless (shadcn)</td><td>🟡 Importante</td></tr>
+        <tr><td>lucide-react</td><td>1.7.0</td><td>Icone SVG</td><td>🟢 Bassa</td></tr>
+        <tr><td>tailwindcss</td><td>4.2.2</td><td>CSS utility framework</td><td>🟡 Importante</td></tr>
+        <tr><td>class-variance-authority</td><td>0.7.1</td><td>Varianti stile componenti</td><td>🟢 Bassa</td></tr>
+        <tr><td>clsx + tailwind-merge</td><td>2.1.1 / 3.5.0</td><td>Merge classi CSS condizionali</td><td>🟢 Bassa</td></tr>
+        <tr><td>@fontsource-variable/geist</td><td>5.2.8</td><td>Font Geist (self-hosted)</td><td>🟢 Bassa</td></tr>
+        <tr><td>tw-animate-css</td><td>1.4.0</td><td>Animazioni CSS aggiuntive</td><td>🟢 Bassa</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <h3>Dipendenze Edge Function (Deno)</h3>
+    <table>
+      <thead><tr><th>Pacchetto</th><th>Versione</th><th>Ruolo</th></tr></thead>
+      <tbody>
+        <tr><td>@supabase/supabase-js (npm:)</td><td>2.100.1</td><td>Client con service role key per accesso dati</td></tr>
+        <tr><td>web-push (npm:)</td><td>3.6.7</td><td>Invio notifiche push via protocollo VAPID/RFC 8292</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <h3>Servizi cloud esterni</h3>
+    <table>
+      <thead><tr><th>Servizio</th><th>Piano</th><th>Funzione</th></tr></thead>
+      <tbody>
+        <tr><td>Supabase</td><td>Free tier</td><td>Auth, PostgreSQL, Realtime, Edge Functions, Storage</td></tr>
+        <tr><td>Vercel</td><td>Hobby</td><td>Hosting SPA, CDN, HTTPS, domain, deploy CI/CD</td></tr>
+        <tr><td>FCM / GCM (Google)</td><td>Gratuito</td><td>Delivery notifiche push su Android Chrome</td></tr>
+        <tr><td>GitHub</td><td>Free</td><td>Source control (MatVitale6/568-platform)</td></tr>
+      </tbody>
+    </table>
+    <div class="info-box amber">
+      <strong>⚠️ Limiti piano gratuito Supabase</strong>
+      500 MB DB, 5 GB bandwidth, 500.000 auth requests/mese, Edge Functions 500.000 invocazioni/mese.
+      Ampiamente sufficiente per un team piccolo (&lt;20 dipendenti). Monitorare da Dashboard → Reports.
+    </div>
+  </div>
+
+</div>
+
+<!-- ─── Section 4 ─── -->
+<div class="chapter">
+  <div class="chapter-badge tech">Parte I</div>
+  <h2>4. Schema del database</h2>
+  <p class="chapter-intro">
+    Il database PostgreSQL ospitato su Supabase contiene 6 tabelle pubbliche con Row Level Security
+    abilitata su tutte. Le operazioni sensibili passano per funzioni RPC con SECURITY DEFINER.
+  </p>
+</div>
+<div class="page-body">
+
+  <div class="section">
+    <h3>Entità e relazioni</h3>
+    <table>
+      <thead><tr><th>Tabella</th><th>Descrizione</th><th>Chiavi import.</th></tr></thead>
+      <tbody>
+        <tr><td><strong>profiles</strong></td><td>Profilo applicativo dell'utente. Separato da auth.users per maggiore controllo.</td><td>id (UUID), auth_user_id → auth.users</td></tr>
+        <tr><td><strong>employees</strong></td><td>Dati anagrafici del dipendente (codice fiscale, telefono, contratto)</td><td>profile_id → profiles (1:1)</td></tr>
+        <tr><td><strong>shifts</strong></td><td>Giornata lavorativa. Una riga per data, può essere aperta o chiusa.</td><td>id, work_date (unique)</td></tr>
+        <tr><td><strong>shift_assignments</strong></td><td>Assegnazione dipendente a turno (con flag turno parziale)</td><td>shift_id → shifts, employee_id → profiles</td></tr>
+        <tr><td><strong>swap_requests</strong></td><td>Richieste di cambio turno tra dipendenti</td><td>shift_id, requester_id, target_employee_id → profiles</td></tr>
+        <tr><td><strong>push_subscriptions</strong></td><td>Endpoint push browser per notifiche. Max 1 attiva per profilo.</td><td>profile_id → profiles, unique idx (profile_id) WHERE active</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <h3>Politiche di accesso per ruolo</h3>
+    <table>
+      <thead><tr><th>Tabella</th><th>SELECT</th><th>INSERT</th><th>UPDATE</th><th>DELETE</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>profiles</td>
+          <td><span class="role-badge both">tutti auth</span></td>
+          <td><span class="role-badge admin">admin</span></td>
+          <td><span class="role-badge both">self / admin</span></td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td>employees</td>
+          <td><span class="role-badge both">tutti auth</span></td>
+          <td><span class="role-badge admin">admin</span></td>
+          <td><span class="role-badge admin">admin</span></td>
+          <td><span class="role-badge admin">admin</span></td>
+        </tr>
+        <tr>
+          <td>shifts</td>
+          <td><span class="role-badge both">tutti auth</span></td>
+          <td><span class="role-badge admin">admin</span></td>
+          <td><span class="role-badge admin">admin</span></td>
+          <td><span class="role-badge admin">admin</span></td>
+        </tr>
+        <tr>
+          <td>shift_assignments</td>
+          <td><span class="role-badge both">tutti auth</span></td>
+          <td><span class="role-badge admin">admin</span></td>
+          <td><span class="role-badge admin">admin</span></td>
+          <td><span class="role-badge admin">admin</span></td>
+        </tr>
+        <tr>
+          <td>swap_requests</td>
+          <td><span class="role-badge both">proprie / admin</span></td>
+          <td><span class="role-badge both">via RPC</span></td>
+          <td><span class="role-badge both">via RPC</span></td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td>push_subscriptions</td>
+          <td><span class="role-badge both">proprie / admin</span></td>
+          <td><span class="role-badge both">via RPC</span></td>
+          <td><span class="role-badge both">via RPC</span></td>
+          <td><span class="role-badge both">proprie / admin</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <h3>Funzioni RPC (Security Definer)</h3>
+    <ul class="checklist">
+      <li><strong>create_swap_request</strong> — Validazione business logic (requester nel turno, target non già assegnato, nessuna pendente duplicata)</li>
+      <li><strong>respond_to_swap_request</strong> — Accetta/rifiuta e aggiorna shift_assignments se accettata</li>
+      <li><strong>register_push_subscription</strong> — Registra endpoint, disattiva subscription precedenti dello stesso profilo</li>
+      <li><strong>disable_push_subscription</strong> — Disiscrive tutte le subscription attive del profilo corrente</li>
+    </ul>
+  </div>
+
+</div>
+
+<!-- ─── Section 5+6 ─── -->
+<div class="chapter">
+  <div class="chapter-badge tech">Parte I</div>
+  <h2>5 & 6. Flusso dati e notifiche push</h2>
+  <p class="chapter-intro">Come i dati fluiscono dall'utente al backend e come le notifiche raggiungono i dispositivi.</p>
+</div>
+<div class="page-body">
+
+  <div class="section">
+    <h3>Flusso autenticazione</h3>
+    <ol class="steps">
+      <li>
+        <div class="step-content">
+          <div class="step-title">Inserimento credenziali</div>
+          <div class="step-desc">L'utente inserisce email e password in Login.jsx. La chiamata va a <code>supabase.auth.signInWithPassword()</code>.</div>
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <div class="step-title">Emissione JWT</div>
+          <div class="step-desc">Supabase Auth (GoTrue) restituisce un JWT access token (1h) + refresh token. Vengono salvati in localStorage dal client SDK.</div>
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <div class="step-title">Caricamento profilo</div>
+          <div class="step-desc">AuthContext legge il profilo da <code>public.profiles</code> tramite <code>auth_user_id</code>. Il ruolo (admin/employee) viene caricato qui.</div>
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <div class="step-title">Accesso ai dati</div>
+          <div class="step-desc">Ogni richiesta DB porta il JWT nell'header Authorization. PostgreSQL RLS usa <code>auth.uid()</code> per filtrare le righe accessibili.</div>
+        </div>
+      </li>
+    </ol>
+  </div>
+
+  <div class="section">
+    <h3>Flusso cambio turno con notifica push</h3>
+    <ol class="steps">
+      <li>
+        <div class="step-content">
+          <div class="step-title">Dipendente richiede cambio</div>
+          <div class="step-desc">Tap su giorno nel calendario → SwapModal → seleziona collega → RPC <code>create_swap_request</code>.</div>
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <div class="step-title">Notifica al target</div>
+          <div class="step-desc">RequestsContext chiama <code>supabase.functions.invoke('send-push')</code> passando l'ID del collega target.</div>
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <div class="step-title">Edge Function send-push</div>
+          <div class="step-desc">Valida JWT manualmente, legge endpoint push del target da <code>push_subscriptions</code>, invia Web Push tramite VAPID.</div>
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <div class="step-title">Service Worker riceve push</div>
+          <div class="step-desc"><code>push-sw-v2.js</code> mostra la notifica di sistema. Click apre l'app su <code>/requests</code>.</div>
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <div class="step-title">Aggiornamento in tempo reale</div>
+          <div class="step-desc">Il canale Realtime WebSocket (<code>swap_requests</code>) aggiorna la lista in RequestsContext su tutti i client connessi.</div>
+        </div>
+      </li>
+    </ol>
+  </div>
+
+  <div class="section">
+    <h3>Sincronizzazione dati (strategia multi-layer)</h3>
+    <table>
+      <thead><tr><th>Meccanismo</th><th>Frequenza</th><th>Componente</th></tr></thead>
+      <tbody>
+        <tr><td>Realtime WebSocket</td><td>Evento (push)</td><td>RequestsContext (swap_requests)</td></tr>
+        <tr><td>Polling silenzioso</td><td>ogni 15 s</td><td>RequestsContext + useCalendar</td></tr>
+        <tr><td>Visibility change</td><td>Al focus tab</td><td>RequestsContext</td></tr>
+        <tr><td>Timeout difensivo</td><td>10 s max</td><td>AuthContext, RequestsContext (withTimeout)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<!-- ─── Section 7 — Security ─── -->
+<div class="chapter">
+  <div class="chapter-badge tech">Parte I</div>
+  <h2>7. Analisi della sicurezza</h2>
+  <p class="chapter-intro">
+    Valutazione rispetto alle principali categorie OWASP Top 10. Severità: 🔴 Alta · 🟡 Media · 🟢 Bassa.
+  </p>
+</div>
+<div class="page-body">
+
+  <div class="section">
+    <h3>Punti di forza</h3>
+    <ul class="checklist">
+      <li>RLS abilitata su tutte le 6 tabelle pubbliche — nessuna tabella esposta senza policy</li>
+      <li>Funzioni Security Definer con <code>set search_path = public</code> — prevenzione SQL injection tramite search_path manipulation</li>
+      <li>JWT validato manualmente nell'Edge Function (<code>supabase.auth.getUser(token)</code>)</li>
+      <li>Anon key in frontend è pubblica per design: RLS garantisce che non si possa leggere/scrivere dati altrui</li>
+      <li>Credenziali sensibili (VAPID private key, service role key) solo in variabili d'ambiente server-side</li>
+      <li>.env.local e cartella supabase/ escluse da git (.gitignore) e da Vercel deploy (.vercelignore)</li>
+      <li>Route admin protetta sia lato client (AdminRoute) sia lato DB (RLS <code>is_admin()</code>)</li>
+      <li>Check duplicati in <code>create_swap_request</code> — nessuna richiesta doppia pendente</li>
+      <li>Subscription push: una sola attiva per profilo, vincolo indice univoco parziale</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h3>Vulnerabilità identificate e raccomandazioni</h3>
+    <table>
+      <thead><tr><th>ID</th><th>Problema</th><th>Rischio</th><th>Raccomandazione</th></tr></thead>
+      <tbody>
+        <tr class="sec-row-warn">
+          <td><strong>S-01</strong></td>
+          <td>CORS <code>Access-Control-Allow-Origin: *</code> nell'Edge Function send-push</td>
+          <td>🟡 Media</td>
+          <td>Restringere all'origin di produzione es. <code>https://568-platform.vercel.app</code></td>
+        </tr>
+        <tr class="sec-row-warn">
+          <td><strong>S-02</strong></td>
+          <td>send-push non verifica che il caller sia autorizzato a notificare i profileIds richiesti</td>
+          <td>🟡 Media</td>
+          <td>Validare che profileIds siano colleghi del caller oppure limitare l'invocazione al contesto delle richieste di cambio</td>
+        </tr>
+        <tr class="sec-row-warn">
+          <td><strong>S-03</strong></td>
+          <td>Content-Security-Policy assente in vercel.json</td>
+          <td>🟡 Media</td>
+          <td>Aggiungere header CSP con <code>default-src 'self'</code>, <code>connect-src</code> per supabase URL, <code>script-src 'self'</code></td>
+        </tr>
+        <tr class="sec-row-risk">
+          <td><strong>S-04</strong></td>
+          <td>BASE_URL hardcoded in push-sw-v2.js (<code>https://568-platform.vercel.app</code>)</td>
+          <td>🟢 Bassa (funzionale)</td>
+          <td>Usare path relativo <code>/logo.png</code> se l'app rimane sullo stesso dominio del service worker</td>
+        </tr>
+        <tr class="sec-row-risk">
+          <td><strong>S-05</strong></td>
+          <td>Credenziali mock hardcodate in Login.jsx per modalità demo</td>
+          <td>🟢 Bassa (mock mode disabilitato in prod)</td>
+          <td>Rimuovere o spostare in variabile d'ambiente quando la modalità mock viene deprecata</td>
+        </tr>
+        <tr class="sec-row-risk">
+          <td><strong>S-06</strong></td>
+          <td>Il campo <code>color</code> dei profili viene inserito direttamente in <code>style={{backgroundColor}}</code> senza validazione formato</td>
+          <td>🟢 Bassa (browser moderni bloccano CSS injection)</td>
+          <td>Validare che il colore sia un hex <code>#RRGGBB</code> valido prima del salvataggio in EmployeeSheet</td>
+        </tr>
+        <tr class="sec-row-risk">
+          <td><strong>S-07</strong></td>
+          <td>useEmployees non usa withTimeout() a differenza di useCalendar</td>
+          <td>🟢 Bassa (UX, non security)</td>
+          <td>Aggiungere timeout di 10s per consistenza e prevenire hang su mobile</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <h3>OWASP Top 10 — Mapping</h3>
+    <table>
+      <thead><tr><th>OWASP</th><th>Categoria</th><th>Stato</th></tr></thead>
+      <tbody>
+        <tr><td>A01</td><td>Broken Access Control</td><td>✅ RLS + RPC Security Definer coprono accesso ai dati</td></tr>
+        <tr><td>A02</td><td>Cryptographic Failures</td><td>✅ HTTPS end-to-end, JWT firmati da Supabase, VAPID per push</td></tr>
+        <tr><td>A03</td><td>Injection (SQL/XSS)</td><td>⚠️ SQL: OK tramite parametrized queries. XSS: nessun dangerouslySetInnerHTML; CSS injection minore (S-06)</td></tr>
+        <tr><td>A04</td><td>Insecure Design</td><td>⚠️ S-02: push send non verifica autorizzazione mittente</td></tr>
+        <tr><td>A05</td><td>Security Misconfiguration</td>
+          <td>⚠️ CORS wildcard (S-01), CSP assente (S-03)</td></tr>
+        <tr><td>A06</td><td>Vulnerable Components</td><td>✅ <code>npm audit</code>: 0 vulnerabilità. Dipendenze aggiornate.</td></tr>
+        <tr><td>A07</td><td>Auth Failures</td><td>✅ Supabase Auth gestisce sessioni, JWT, refresh automatico</td></tr>
+        <tr><td>A08</td><td>Software Integrity</td><td>✅ No CDN esterne, font self-hosted, build deterministica</td></tr>
+        <tr><td>A09</td><td>Logging / Monitoring</td><td>⚠️ Logging solo via Supabase Dashboard e Vercel Analytics (nessun alert configurato)</td></tr>
+        <tr><td>A10</td><td>SSRF</td><td>✅ Nessuna richiesta proxy server-side verso URL utente-controllati</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     PARTE II — GUIDA UTENTE
+════════════════════════════════════════════════════════════════════ -->
+
+<div class="chapter">
+  <div class="chapter-badge">Parte II · Guida Utente</div>
+  <h2>8. Primo accesso</h2>
+  <p class="chapter-intro">
+    Come accedere all'applicazione per la prima volta come dipendente.
+  </p>
+</div>
+<div class="page-body">
+
+  <div class="section">
+    <div class="info-box blue">
+      <strong>🔗 URL dell'applicazione</strong>
+      L'app è accessibile via browser da smartphone o computer. L'URL di produzione verrà comunicato dall'amministratore.
+      Si consiglia di <strong>aggiungere alla home screen</strong> per un accesso rapido (Sezione 13).
+    </div>
+
+    <h3>Come effettuare il login</h3>
+    <ol class="steps">
+      <li>
+        <div class="step-content">
+          <div class="step-title">Apri il browser e vai all'URL dell'app</div>
+          <div class="step-desc">Usa Chrome (Android consigliato) o Safari (iPhone). Vedrai la schermata con il logo Birreria 568.</div>
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <div class="step-title">Inserisci la tua email e la password</div>
+          <div class="step-desc">Le credenziali ti vengono fornite dall'amministratore tramite email di invito. La password può essere cambiata dal tuo profilo Supabase.</div>
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <div class="step-title">Tocca "Accedi"</div>
+          <div class="step-desc">Se le credenziali sono corrette, verrai reindirizzato al Calendario. La sessione rimane attiva anche chiudendo il browser.</div>
+        </div>
+      </li>
+    </ol>
+
+    <div class="info-box amber">
+      <strong>⚠️ Password dimenticata</strong>
+      Al momento non esiste una schermata "password dimenticata" integrata nell'app. Contatta l'amministratore per il reset.
+    </div>
+  </div>
+
+</div>
+
+<!-- ─── Section 9 ─── -->
+<div class="chapter">
+  <div class="chapter-badge">Parte II · Guida Utente</div>
+  <h2>9. Visualizzare il calendario</h2>
+  <p class="chapter-intro">Il calendario è la schermata principale. Mostra i turni settimana per settimana.</p>
+</div>
+<div class="page-body">
+
+  <div class="section">
+    <h3>Navigazione</h3>
+    <table>
+      <thead><tr><th>Azione</th><th>Come farlo</th></tr></thead>
+      <tbody>
+        <tr><td>Settimana precedente</td><td>Tasto <strong>←</strong> in alto a sinistra</td></tr>
+        <tr><td>Settimana successiva</td><td>Tasto <strong>→</strong> in alto a destra</td></tr>
+        <tr><td>Mese e numero settimana</td><td>Visualizzato al centro (es. "Aprile 2026 · Settimana 15")</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <h3>Interpretare una riga del calendario</h3>
+    <table>
+      <thead><tr><th>Elemento</th><th>Significato</th></tr></thead>
+      <tbody>
+        <tr><td>Data e nome giorno</td><td>Lunedì–Domenica della settimana visualizzata</td></tr>
+        <tr><td>Badge colorato con iniziale</td><td>Dipendente assegnato a quel turno</td></tr>
+        <tr><td>Badge con contorno tratteggiato</td><td>Turno <strong>parziale</strong> (il dipendente lavora solo parte della giornata)</td></tr>
+        <tr><td>Riga grigia "Chiuso"</td><td>Il locale è chiuso quel giorno</td></tr>
+        <tr><td>Punto rosso su badge</td><td>Esiste una richiesta di cambio turno pendente per quel giorno</td></tr>
+        <tr><td>Domenica e Lunedì</td><td>Giornate di chiusura predefinita (evidenziate in grassetto)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <h3>Cosa può fare un dipendente dal calendario</h3>
+    <ul class="checklist">
+      <li>Vedere tutti i turni della settimana (propri e dei colleghi)</li>
+      <li>Richiedere un cambio turno toccando il proprio nome in un giorno</li>
+    </ul>
+    <ul class="checklist">
+      <li class="cross">Non può modificare i turni (solo admin)</li>
+      <li class="cross">Non può segnare la chiusura del locale (solo admin)</li>
+    </ul>
+  </div>
+
+</div>
+
+<!-- ─── Section 10 ─── -->
+<div class="chapter">
+  <div class="chapter-badge">Parte II · Guida Utente</div>
+  <h2>10. Richiedere un cambio turno</h2>
+  <p class="chapter-intro">Come avanzare una richiesta di cambio a un collega.</p>
+</div>
+<div class="page-body">
+
+  <div class="section">
+    <ol class="steps">
+      <li>
+        <div class="step-content">
+          <div class="step-title">Apri il calendario e vai alla settimana desiderata</div>
+          <div class="step-desc">Naviga con le frecce fino a trovare il giorno in cui vuoi scambiare il turno.</div>
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <div class="step-title">Tocca il tuo badge nel giorno</div>
+          <div class="step-desc">Il tuo badge ha il colore e l'iniziale del tuo nome. Toccarlo apre la finestra "Richiedi cambio turno".</div>
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <div class="step-title">Seleziona un collega disponibile</div>
+          <div class="step-desc">La lista mostra solo i colleghi non già in turno quel giorno. Toccane uno per selezionarlo (evidenziato con il suo colore).</div>
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <div class="step-title">Tocca "Conferma"</div>
+          <div class="step-desc">La richiesta viene inviata. Il collega riceverà una notifica push (se attivata) e potrà accettare o rifiutare.</div>
+        </div>
+      </li>
+    </ol>
+
+    <div class="info-box green">
+      <strong>✅ Dopo l'invio</strong>
+      Vedrai un messaggio di conferma. La richiesta appare nella sezione "Richieste" con stato <span class="status-badge pending">pending</span>.
+      Puoi inviare solo una richiesta pendente per ogni giorno/collega.
+    </div>
+
+    <div class="info-box amber">
+      <strong>⚠️ Non trovi il tuo nome nel calendario?</strong>
+      Significa che non sei assegnato a quel turno. Contatta l'amministratore.
+    </div>
+  </div>
+
+</div>
+
+<!-- ─── Section 11 ─── -->
+<div class="chapter">
+  <div class="chapter-badge">Parte II · Guida Utente</div>
+  <h2>11. Rispondere a una richiesta</h2>
+  <p class="chapter-intro">Come accettare o rifiutare quando un collega ti chiede di scambiare il turno.</p>
+</div>
+<div class="page-body">
+
+  <div class="section">
+    <div class="info-box blue">
+      <strong>🔔 Ricevi una notifica</strong>
+      Se le notifiche push sono attive, riceverai una notifica di sistema anche con il browser chiuso.
+      Toccala per aprire direttamente la sezione Richieste.
+    </div>
+
+    <ol class="steps">
+      <li>
+        <div class="step-content">
+          <div class="step-title">Vai nella sezione "Richieste" (tab in basso)</div>
+          <div class="step-desc">Il pallino rosso sul tab indica quante richieste pendenti hai.</div>
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <div class="step-title">Trova la richiesta con stato PENDING che ti riguarda</div>
+          <div class="step-desc">Le richieste sono ordinate dalla più recente. Le card mostrano richiedente, collega target, data del turno e stato.</div>
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <div class="step-title">Tocca "Accetta" o "Rifiuta"</div>
+          <div class="step-desc">
+            — <strong>Accetta</strong>: il turno viene automaticamente spostato sulla tua riga nel calendario.<br/>
+            — <strong>Rifiuta</strong>: la richiesta viene chiusa, nessuna modifica al calendario.
+          </div>
+        </div>
+      </li>
+    </ol>
+
+    <h3 class="mt-4">Stati delle richieste</h3>
+    <table>
+      <thead><tr><th>Badge</th><th>Significato</th></tr></thead>
+      <tbody>
+        <tr><td><span class="status-badge pending">PENDING</span></td><td>In attesa di risposta dal collega target</td></tr>
+        <tr><td><span class="status-badge accepted">ACCEPTED</span></td><td>Accettata — il turno è stato scambiato</td></tr>
+        <tr><td><span class="status-badge rejected">REJECTED</span></td><td>Rifiutata — turno invariato</td></tr>
+        <tr><td><span class="status-badge cancelled">CANCELLED</span></td><td>Annullata dall'amministratore</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<!-- ─── Section 12 ─── -->
+<div class="chapter">
+  <div class="chapter-badge">Parte II · Guida Utente</div>
+  <h2>12. Attivare le notifiche push</h2>
+  <p class="chapter-intro">Ricevi notifiche in tempo reale anche con l'app chiusa.</p>
+</div>
+<div class="page-body">
+
+  <div class="section">
+    <ol class="steps">
+      <li>
+        <div class="step-content">
+          <div class="step-title">Vai in "Richieste" → sezione "Notifiche browser"</div>
+          <div class="step-desc">In cima alla pagina Richieste trovi il pannello notifiche con il pulsante "Attiva notifiche".</div>
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <div class="step-title">Tocca "Attiva notifiche"</div>
+          <div class="step-desc">Il browser mostra un popup di sistema che chiede il permesso per ricevere notifiche. Tocca <strong>Consenti</strong>.</div>
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <div class="step-title">Verifica che lo stato sia "Attivo"</div>
+          <div class="step-desc">Il pulsante diventa "Disattiva notifiche" e lo stato browser mostra "granted".</div>
+        </div>
+      </li>
+    </ol>
+
+    <h3 class="mt-4">Risoluzione problemi notifiche</h3>
+    <table>
+      <thead><tr><th>Problema</th><th>Soluzione</th></tr></thead>
+      <tbody>
+        <tr><td>Il pulsante non appare</td><td>Il browser non supporta Web Push (es. Safari iPhone &lt; 16.4 o browser in-app di Instagram/WhatsApp). Usa Chrome.</td></tr>
+        <tr><td>Permesso negato (blocked)</td><td>Vai nelle impostazioni di Chrome → Impostazioni sito → Notifiche → sblocca il dominio dell'app.</td></tr>
+        <tr><td>Notifiche non arrivano in background</td><td>Assicurarsi che le notifiche non siano in modalità silenziosa nelle impostazioni Android.</td></tr>
+        <tr><td>Le notifiche arrivano in ritardo</td><td>Normale se il servizio push è in coda. Su Android controlla che la batteria non stia in "risparmio energetico aggressivo".</td></tr>
+      </tbody>
+    </table>
+
+    <div class="info-box amber">
+      <strong>⚠️ Un solo dispositivo alla volta</strong>
+      Le notifiche sono attive sull'ultimo dispositivo nel quale hai attivato. Se accedi da un nuovo dispositivo e riattivi le notifiche, il vecchio dispositivo non le riceve più.
+    </div>
+  </div>
+
+</div>
+
+<!-- ─── Section 13 ─── -->
+<div class="chapter">
+  <div class="chapter-badge">Parte II · Guida Utente</div>
+  <h2>13. Installare l'app (PWA)</h2>
+  <p class="chapter-intro">Aggiungi Turni 568 alla home screen per usarla come un'app nativa, senza browser.</p>
+</div>
+<div class="page-body">
+
+  <div class="section">
+    <div class="two-col">
+      <div>
+        <h3>Android (Chrome)</h3>
+        <ol class="steps">
+          <li>
+            <div class="step-content">
+              <div class="step-title">Apri il sito in Chrome</div>
+            </div>
+          </li>
+          <li>
+            <div class="step-content">
+              <div class="step-title">Tocca i tre puntini (⋮) in alto a destra</div>
+            </div>
+          </li>
+          <li>
+            <div class="step-content">
+              <div class="step-title">Seleziona "Aggiungi a schermata Home"</div>
+            </div>
+          </li>
+          <li>
+            <div class="step-content">
+              <div class="step-title">Conferma con "Aggiungi"</div>
+              <div class="step-desc">L'icona con il logo Birreria 568 appare sul tuo telefono.</div>
+            </div>
+          </li>
+        </ol>
+      </div>
+      <div>
+        <h3>iPhone (Safari)</h3>
+        <ol class="steps">
+          <li>
+            <div class="step-content">
+              <div class="step-title">Apri il sito in Safari</div>
+            </div>
+          </li>
+          <li>
+            <div class="step-content">
+              <div class="step-title">Tocca l'icona di condivisione (□↑)</div>
+            </div>
+          </li>
+          <li>
+            <div class="step-content">
+              <div class="step-title">Scorri e tocca "Aggiungi a Home"</div>
+            </div>
+          </li>
+          <li>
+            <div class="step-content">
+              <div class="step-title">Tocca "Aggiungi"</div>
+              <div class="step-desc">⚠️ Le notifiche push su iPhone richiedono iOS 16.4+.</div>
+            </div>
+          </li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="info-box green">
+      <strong>✅ Vantaggi PWA</strong>
+      Si apre a schermo intero (senza barra URL), funziona più velocemente dopo il primo caricamento,
+      e riceve le notifiche push come una normale app installata.
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     PARTE III — GUIDA AMMINISTRATORE
+════════════════════════════════════════════════════════════════════ -->
+
+<div class="chapter">
+  <div class="chapter-badge admin">Parte III · Guida Admin</div>
+  <h2>14. Gestione dipendenti</h2>
+  <p class="chapter-intro">
+    La sezione Dipendenti è accessibile solo agli utenti con ruolo <span class="role-badge admin">admin</span>.
+    Permette di creare, modificare, eliminare profili e inviare inviti.
+  </p>
+</div>
+<div class="page-body">
+
+  <div class="section">
+    <h3>Creare un nuovo dipendente</h3>
+    <ol class="steps">
+      <li>
+        <div class="step-content">
+          <div class="step-title">Vai in "Dipendenti" (tab in basso con icona persone)</div>
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <div class="step-title">Tocca "+ Crea profilo" in alto a destra</div>
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <div class="step-title">Compila il form</div>
+          <div class="step-desc">
+            Campi richiesti: <strong>Nome completo</strong>, <strong>Email</strong>, <strong>Codice fiscale</strong>, <strong>Telefono</strong>.<br/>
+            Opzionale: data fine contratto, colore badge.
+          </div>
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <div class="step-title">Salva</div>
+          <div class="step-desc">Il profilo viene creato. Il dipendente non ha ancora accesso all'app finché non viene inviato l'invito.</div>
+        </div>
+      </li>
+    </ol>
+  </div>
+
+  <div class="section">
+    <h3>Inviare l'invito di accesso</h3>
+    <div class="info-box blue">
+      <strong>📧 Come funziona l'invito</strong>
+      L'invito crea l'utente in Supabase Auth con l'email inserita e invia un'email di set-up password.
+      Il dipendente clicca il link nell'email, imposta la password e può accedere all'app.
+    </div>
+    <ol class="steps">
+      <li>
+        <div class="step-content">
+          <div class="step-title">Trova il dipendente nella lista</div>
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <div class="step-title">Tocca "Invia invito"</div>
+          <div class="step-desc">Il pulsante appare solo se il dipendente non è ancora stato invitato (<code>invited: false</code>). Dopo l'invio, scompare per 3 secondi e il campo "Invitato" diventa ✓.</div>
+        </div>
+      </li>
+    </ol>
+  </div>
+
+  <div class="section">
+    <h3>Modificare o eliminare un dipendente</h3>
+    <table>
+      <thead><tr><th>Azione</th><th>Come</th><th>Effetto</th></tr></thead>
+      <tbody>
+        <tr><td>Modifica</td><td>Tocca la riga del dipendente → si apre il pannello laterale con il form precompilato → modifica e salva</td><td>Aggiorna profilo e riga employees su DB</td></tr>
+        <tr><td>Elimina</td><td>In fondo al pannello laterale → "Elimina profilo" → conferma nel dialogo</td><td>Rimuove profilo, assignments, richieste associate (CASCADE). Irreversibile.</td></tr>
+      </tbody>
+    </table>
+    <div class="info-box red">
+      <strong>🗑️ Attenzione all'eliminazione</strong>
+      L'eliminazione di un dipendente cancella anche i suoi turni assegnati, le sue richieste di cambio e la subscription push.
+      Verifica di aver rimosso prima le assegnazioni in corso.
+    </div>
+  </div>
+
+</div>
+
+<!-- ─── Section 15 ─── -->
+<div class="chapter">
+  <div class="chapter-badge admin">Parte III · Guida Admin</div>
+  <h2>15. Creazione e modifica turni</h2>
+  <p class="chapter-intro">Solo l'admin può aggiungere o modificare turni. I dipendenti vedono ma non possono modificare.</p>
+</div>
+<div class="page-body">
+
+  <div class="section">
+    <h3>Aggiungere o modificare un turno</h3>
+    <ol class="steps">
+      <li>
+        <div class="step-content">
+          <div class="step-title">Vai nel Calendario e naviga alla settimana desiderata</div>
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <div class="step-title">Tocca una riga giorno (come admin vedi il tasto "+" o la riga cliccabile)</div>
+          <div class="step-desc">Si apre la modale <strong>Modifica turno</strong> con la lista di tutti i dipendenti.</div>
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <div class="step-title">Seleziona i dipendenti in turno</div>
+          <div class="step-desc">Tocca ogni nome per aggiungerlo/rimuoverlo. I selezionati appaiono con il loro colore.</div>
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <div class="step-title">Segna turni parziali (opzionale)</div>
+          <div class="step-desc">Dopo aver selezionato un dipendente, appare il toggle "P" (Parziale). Attivalo se lavora solo parte della giornata.</div>
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <div class="step-title">Salva</div>
+          <div class="step-desc">Le modifiche vengono salvate su Supabase e refreshate in tempo reale per tutti gli utenti connessi.</div>
+        </div>
+      </li>
+    </ol>
+  </div>
+
+  <div class="section">
+    <h3>Segnare una giornata di chiusura</h3>
+    <ol class="steps">
+      <li>
+        <div class="step-content">
+          <div class="step-title">Apri la modale del giorno</div>
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <div class="step-title">Attiva il toggle "Giornata di chiusura" in cima alla lista</div>
+          <div class="step-desc">Tutti i dipendenti vengono deselezionati automaticamente.</div>
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <div class="step-title">Salva</div>
+          <div class="step-desc">Il giorno appare grigio nel calendario con etichetta "Chiuso".</div>
+        </div>
+      </li>
+    </ol>
+
+    <div class="info-box blue">
+      <strong>📅 Chiusure predefinite automatiche</strong>
+      Domenica, Lunedì, 24–26 e 31 dicembre, 1° gennaio, 1° maggio sono segnati come chiusi di default
+      (logica <code>isDefaultClosed()</code> nel calendario). Non richiedono azione manuale.
+    </div>
+  </div>
+
+</div>
+
+<!-- ─── Section 16 ─── -->
+<div class="chapter">
+  <div class="chapter-badge admin">Parte III · Guida Admin</div>
+  <h2>16. Copiare una settimana</h2>
+  <p class="chapter-intro">Risparmia tempo replicando i turni di una settimana su un'altra.</p>
+</div>
+<div class="page-body">
+
+  <div class="section">
+    <ol class="steps">
+      <li>
+        <div class="step-content">
+          <div class="step-title">Vai nella settimana che vuoi COPIARE (sorgente)</div>
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <div class="step-title">Tocca il pulsante "Copia settimana" in alto a destra nel Calendario</div>
+          <div class="step-desc">Si apre la modale con le opzioni di copia.</div>
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <div class="step-title">Seleziona la(e) settimana(e) di DESTINAZIONE</div>
+          <div class="step-desc">Puoi copiare su una o più settimane future.</div>
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <div class="step-title">Conferma</div>
+          <div class="step-desc">I turni (con dipendenti e flag parziale) vengono replicati. Le giornate di chiusura vengono copiate come chiuse.</div>
+        </div>
+      </li>
+    </ol>
+
+    <div class="info-box amber">
+      <strong>⚠️ Attenzione — sovrascrittura</strong>
+      La copia sovrascrive i turni già esistenti nelle settimane di destinazione. Verifica prima che non ci siano turni già inseriti nelle settimane target.
+    </div>
+  </div>
+
+</div>
+
+<!-- ─── Section 17 ─── -->
+<div class="chapter">
+  <div class="chapter-badge admin">Parte III · Guida Admin</div>
+  <h2>17. Gestione richieste di cambio</h2>
+  <p class="chapter-intro">L'admin vede TUTTE le richieste di cambio del team, non solo le proprie.</p>
+</div>
+<div class="page-body">
+
+  <div class="section">
+    <h3>Panoramica admin</h3>
+    <ul class="checklist">
+      <li>Accesso a tutte le richieste di tutti i dipendenti, ordinate dalla più recente</li>
+      <li>Possibilità di accettare o rifiutare qualsiasi richiesta ancora pendente (override)</li>
+      <li>Visibilità su data richiesta e data risposta</li>
+    </ul>
+
+    <h3 class="mt-4">Intervento manuale su richiesta</h3>
+    <p>Se un collega target non risponde entro un tempo ragionevole, l'admin può:</p>
+    <ol class="steps">
+      <li>
+        <div class="step-content">
+          <div class="step-title">Trovare la richiesta nella sezione "Richieste"</div>
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <div class="step-title">Accettare o rifiutare al posto del target</div>
+          <div class="step-desc">La funzione RPC <code>respond_to_swap_request</code> verifica che solo il target o l'admin possa rispondere.</div>
+        </div>
+      </li>
+    </ol>
+
+    <div class="info-box amber">
+      <strong>⚠️ Notifiche push verso admin</strong>
+      L'admin riceve notifiche push anche per le richieste tra dipendenti (se ha attivato le notifiche sul suo dispositivo).
+    </div>
+  </div>
+
+</div>
+
+<!-- ─── Section 18 ─── -->
+<div class="chapter">
+  <div class="chapter-badge admin">Parte III · Guida Admin</div>
+  <h2>18. Procedure operative consigliate</h2>
+  <p class="chapter-intro">Best practice per mantenere il sistema sempre organizzato ed efficiente.</p>
+</div>
+<div class="page-body">
+
+  <div class="section">
+    <h3>Pianificazione settimanale</h3>
+    <ul class="checklist">
+      <li>Inserire i turni della settimana con <strong>almeno 3–4 giorni di anticipo</strong> per dare tempo ai dipendenti di pianificare</li>
+      <li>Usare "Copia settimana" come base se i turni sono simili alla settimana precedente</li>
+      <li>Verificare che le chiusure straordinarie (feste, eventi) siano segnate prima dell'inizio settimana</li>
+      <li>Dopo ogni cambio di assegnazione, i turni si aggiornano in tempo reale per tutti — non è necessario notificare manualmente</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h3>Onboarding nuovi dipendenti</h3>
+    <ol class="steps">
+      <li>
+        <div class="step-content">
+          <div class="step-title">Creare il profilo in "Dipendenti"</div>
+          <div class="step-desc">Inserire tutti i dati anagrafici e scegliere un colore unico non già usato.</div>
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <div class="step-title">Inviare l'invito via app</div>
+          <div class="step-desc">Il dipendente riceve l'email con il link per impostare la password.</div>
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <div class="step-title">Comunicare l'URL dell'app e consigliare l'installazione PWA</div>
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <div class="step-title">Far attivare le notifiche push al dipendente</div>
+          <div class="step-desc">Fondamentale per ricevere avvisi di cambio turno.</div>
+        </div>
+      </li>
+    </ol>
+  </div>
+
+  <div class="section">
+    <h3>Gestione fine rapporto</h3>
+    <ul class="checklist">
+      <li>Prima di eliminare il profilo: rimuovere le assegnazioni ai turni futuri</li>
+      <li>Gestire le richieste di cambio pendenti che coinvolgono il dipendente</li>
+      <li>Poi procedere all'eliminazione — il profilo viene rimosso in cascade da DB</li>
+      <li class="warn">Disabilitare anche l'utente in Supabase Dashboard → Authentication → Users per revocare l'accesso immediato</li>
+    </ul>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     PARTE IV — OPERAZIONI TECNICHE
+════════════════════════════════════════════════════════════════════ -->
+
+<div class="chapter">
+  <div class="chapter-badge tech">Parte IV · Operazioni Tecniche</div>
+  <h2>19. Deploy e variabili d'ambiente</h2>
+  <p class="chapter-intro">Come rimettere in produzione l'app e le variabili necessarie.</p>
+</div>
+<div class="page-body">
+
+  <div class="section">
+    <h3>Variabili d'ambiente necessarie</h3>
+    <table>
+      <thead><tr><th>Variabile</th><th>Dove</th><th>Descrizione</th></tr></thead>
+      <tbody>
+        <tr><td><code>VITE_SUPABASE_URL</code></td><td>Vercel + .env.local</td><td>URL progetto Supabase (es. https://xxx.supabase.co)</td></tr>
+        <tr><td><code>VITE_SUPABASE_ANON_KEY</code></td><td>Vercel + .env.local</td><td>Chiave pubblica anon/public di Supabase</td></tr>
+        <tr><td><code>VITE_VAPID_PUBLIC_KEY</code></td><td>Vercel + .env.local</td><td>Chiave pubblica VAPID per Web Push</td></tr>
+        <tr><td><code>VAPID_PUBLIC_KEY</code></td><td>Supabase Edge Function secrets</td><td>Stessa chiave pubblica VAPID</td></tr>
+        <tr><td><code>VAPID_PRIVATE_KEY</code></td><td>Supabase Edge Function secrets</td><td>Chiave privata VAPID (non condividere mai)</td></tr>
+        <tr><td><code>VAPID_SUBJECT</code></td><td>Supabase Edge Function secrets</td><td>Email contatto VAPID (es. mailto:admin@…)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <h3>Mettere in produzione (Vercel)</h3>
+    <div class="code-block">
+<span class="comment"># Dalla cartella del progetto</span>
+<span class="key">cd</span> C:\Users\bello\Downloads\568-platform
+<span class="key">npx vercel</span> --prod
+    </div>
+    <div class="info-box blue">
+      Le variabili d'ambiente Vercel (<code>VITE_*</code>) devono essere già configurate nel pannello
+      Vercel (Project → Settings → Environment Variables). Vengono incluse nel build al deploy.
+    </div>
+  </div>
+
+  <div class="section">
+    <h3>Aggiornare la Edge Function send-push</h3>
+    <div class="code-block">
+<span class="key">npx supabase</span> functions deploy send-push --no-verify-jwt --use-api
+    </div>
+    <p style="font-size:9.5pt; color: #64748b;">Il flag <code>--use-api</code> è necessario su Windows per evitare errori Docker. Il flag <code>--no-verify-jwt</code> è necessario perché la funzione fa la validazione JWT manualmente.</p>
+  </div>
+
+  <div class="section">
+    <h3>Eseguire le migration SQL</h3>
+    <p style="font-size: 9.5pt; color: #475569;">Se le tabelle non sono ancora state create, eseguire questi file nell'ordine tramite Supabase Dashboard → SQL Editor:</p>
+    <ol class="steps">
+      <li><div class="step-content"><div class="step-title"><code>supabase/schema.sql</code></div><div class="step-desc">Crea tutte le tabelle principali + RLS + trigger</div></div></li>
+      <li><div class="step-content"><div class="step-title"><code>supabase/push_notifications.sql</code></div><div class="step-desc">Tabella push_subscriptions + RPC register/disable</div></div></li>
+      <li><div class="step-content"><div class="step-title"><code>supabase/swap_request_workflow.sql</code></div><div class="step-desc">RPC create_swap_request e respond_to_swap_request</div></div></li>
+      <li><div class="step-content"><div class="step-title"><code>supabase/bootstrap_admin.sql</code></div><div class="step-desc">Crea il primo admin (modificare UUID e dati prima di eseguire)</div></div></li>
+    </ol>
+  </div>
+
+</div>
+
+<!-- ─── Section 20 ─── -->
+<div class="chapter">
+  <div class="chapter-badge tech">Parte IV · Operazioni Tecniche</div>
+  <h2>20. Manutenzione ordinaria</h2>
+  <p class="chapter-intro">Operazioni periodiche consigliate per mantenere il sistema efficiente.</p>
+</div>
+<div class="page-body">
+
+  <div class="section">
+    <h3>Manutenzione mensile</h3>
+    <ul class="checklist">
+      <li>Verificare da Supabase Dashboard → Reports che l'utilizzo rimanga nei limiti del piano free</li>
+      <li>Controllare che non ci siano richieste di cambio <span class="status-badge pending">pending</span> rimaste aperte da più di 7 giorni</li>
+      <li>Verificare che le subscription push inattive vengano pulite (il sistema le segna <code>active: false</code> automaticamente su 404/410)</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h3>Aggiornamento dipendenze</h3>
+    <div class="code-block">
+<span class="comment"># Controlla vulnerabilità</span>
+<span class="key">npm audit</span>
+
+<span class="comment"># Aggiorna patch sicure</span>
+<span class="key">npm audit fix</span>
+
+<span class="comment"># Visualizza aggiornamenti disponibili</span>
+<span class="key">npx npm-check-updates</span> -u
+    </div>
+    <div class="info-box amber">
+      <strong>⚠️ Aggiornamenti Supabase</strong>
+      La libreria <code>@supabase/supabase-js</code> è critica. Testa sempre localmente prima di deployare
+      aggiornamenti major. Controllare il changelog di Supabase per breaking changes.
+    </div>
+  </div>
+
+  <div class="section">
+    <h3>Backup e ripristino</h3>
+    <ul class="checklist">
+      <li>Supabase piano free include backup automatici del DB con retention di 1 giorno</li>
+      <li>Per export manuale: Supabase Dashboard → Database → Backups oppure pg_dump via connection string</li>
+      <li>Il codice sorgente è su GitHub (MatVitale6/568-platform, branch main) — aggiornare dopo ogni modifica con <code>git push</code></li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h3>Contatti tecnici e riferimenti</h3>
+    <table>
+      <thead><tr><th>Risorsa</th><th>URL / info</th></tr></thead>
+      <tbody>
+        <tr><td>Supabase Dashboard</td><td>https://supabase.com/dashboard/project/fnwuanftlhbqksldgafe</td></tr>
+        <tr><td>Vercel Dashboard</td><td>https://vercel.com/matvitale6s-projects/568-platform</td></tr>
+        <tr><td>GitHub Repository</td><td>https://github.com/MatVitale6/568-platform</td></tr>
+        <tr><td>Documentazione Supabase</td><td>https://supabase.com/docs</td></tr>
+        <tr><td>Documentazione Web Push</td><td>https://web.dev/push-notifications-overview/</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="divider"></div>
+  <p style="text-align:center; color: #94a3b8; font-size: 9pt; margin-top: 30px;">
+    Turni 568 — Birreria 568 Garbatella · Documentazione v1.0 · Aprile 2026<br/>
+    Generato automaticamente dall'analisi del codebase.
+  </p>
+
+</div>
+
+</body>
+</html>

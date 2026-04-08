@@ -1,0 +1,1310 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Turni 568 – Roadmap e Analisi Tecnica</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --surface2: #263348;
+      --border: #334155;
+      --indigo: #6366f1;
+      --indigo-light: #818cf8;
+      --rose: #f43f5e;
+      --amber: #f59e0b;
+      --emerald: #10b981;
+      --sky: #38bdf8;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --muted2: #64748b;
+      --radius: 12px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+      font-size: 10.5pt;
+    }
+
+    /* ── COVER ─────────────────────────────────────────────── */
+    .cover {
+      width: 100%;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 60px 48px;
+      page-break-after: always;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cover::before {
+      content: '';
+      position: absolute;
+      top: -120px; left: -120px;
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(99,102,241,0.15) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .cover::after {
+      content: '';
+      position: absolute;
+      bottom: -80px; right: -80px;
+      width: 400px; height: 400px;
+      background: radial-gradient(circle, rgba(244,63,94,0.10) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .cover-badge {
+      display: inline-block;
+      background: rgba(99,102,241,0.2);
+      border: 1px solid rgba(99,102,241,0.4);
+      color: var(--indigo-light);
+      font-size: 9pt;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 6px 18px;
+      border-radius: 50px;
+      margin-bottom: 32px;
+    }
+
+    .cover h1 {
+      font-size: 40pt;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -0.02em;
+      margin-bottom: 12px;
+      line-height: 1.1;
+    }
+
+    .cover h1 span {
+      background: linear-gradient(90deg, var(--indigo-light), var(--sky));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .cover-subtitle {
+      font-size: 14pt;
+      color: var(--muted);
+      margin-bottom: 48px;
+    }
+
+    .cover-meta {
+      display: flex;
+      gap: 32px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .cover-meta-item {
+      text-align: center;
+    }
+
+    .cover-meta-item .label {
+      font-size: 8pt;
+      color: var(--muted2);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .cover-meta-item .value {
+      font-size: 11pt;
+      color: var(--text);
+      font-weight: 600;
+      margin-top: 2px;
+    }
+
+    .cover-divider {
+      width: 80px;
+      height: 2px;
+      background: linear-gradient(90deg, var(--indigo), var(--sky));
+      border-radius: 2px;
+      margin: 36px auto;
+    }
+
+    /* ── LAYOUT ─────────────────────────────────────────────── */
+    .page {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 56px 48px;
+    }
+
+    /* ── SECTIONS ───────────────────────────────────────────── */
+    .section {
+      margin-bottom: 56px;
+      page-break-inside: avoid;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 28px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .section-num {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, var(--indigo), var(--sky));
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13pt;
+      font-weight: 800;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .section-title {
+      font-size: 17pt;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .section-desc {
+      font-size: 9.5pt;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    /* ── CARDS ──────────────────────────────────────────────── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px 24px;
+      margin-bottom: 16px;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .card-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .card.priority-critical { border-left: 3px solid var(--rose); }
+    .card.priority-high     { border-left: 3px solid var(--amber); }
+    .card.priority-medium   { border-left: 3px solid var(--indigo); }
+    .card.priority-low      { border-left: 3px solid var(--emerald); }
+    .card.priority-done     { border-left: 3px solid var(--muted2); opacity: 0.75; }
+
+    .card-title {
+      font-size: 11.5pt;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .card-meta {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 4px;
+    }
+
+    .badge {
+      display: inline-block;
+      font-size: 8pt;
+      font-weight: 600;
+      padding: 2px 10px;
+      border-radius: 50px;
+      letter-spacing: 0.06em;
+    }
+
+    .badge-critical { background: rgba(244,63,94,0.15); color: #fda4af; }
+    .badge-high     { background: rgba(245,158,11,0.15); color: #fcd34d; }
+    .badge-medium   { background: rgba(99,102,241,0.15); color: var(--indigo-light); }
+    .badge-low      { background: rgba(16,185,129,0.15); color: #6ee7b7; }
+    .badge-done     { background: rgba(100,116,139,0.15); color: var(--muted); }
+    .badge-security { background: rgba(244,63,94,0.12); color: #fda4af; }
+    .badge-feature  { background: rgba(56,189,248,0.12); color: var(--sky); }
+    .badge-bug      { background: rgba(245,158,11,0.12); color: #fcd34d; }
+    .badge-ux       { background: rgba(99,102,241,0.12); color: var(--indigo-light); }
+    .badge-infra    { background: rgba(16,185,129,0.12); color: #6ee7b7; }
+
+    .card-body {
+      font-size: 9.5pt;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .card-body p { margin-bottom: 6px; }
+    .card-body p:last-child { margin-bottom: 0; }
+
+    .card-body strong {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    /* ── EFFORT TABLE ───────────────────────────────────────── */
+    .effort-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
+      font-size: 8.5pt;
+      color: var(--muted2);
+    }
+
+    .effort-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: var(--surface2);
+      border-radius: 6px;
+      padding: 3px 10px;
+      font-size: 8pt;
+      color: var(--muted);
+    }
+
+    .effort-pill .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+    }
+
+    /* ── INLINE CODE ────────────────────────────────────────── */
+    code {
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: 8.5pt;
+      background: var(--surface2);
+      color: var(--sky);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    pre {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px 18px;
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: 8.5pt;
+      color: #e2e8f0;
+      overflow: hidden;
+      white-space: pre-wrap;
+      word-break: break-word;
+      margin: 12px 0;
+      line-height: 1.7;
+    }
+
+    pre .comment { color: #64748b; }
+    pre .kw      { color: var(--indigo-light); }
+    pre .str     { color: #86efac; }
+    pre .fn      { color: var(--sky); }
+
+    /* ── SUMMARY TABLE ──────────────────────────────────────── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 9pt;
+      margin: 16px 0;
+    }
+
+    th {
+      background: var(--surface2);
+      color: var(--muted);
+      font-weight: 600;
+      font-size: 8pt;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      padding: 10px 14px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    td {
+      padding: 10px 14px;
+      border-bottom: 1px solid rgba(51,65,85,0.5);
+      color: var(--muted);
+      vertical-align: top;
+    }
+
+    td strong { color: var(--text); }
+
+    tr:last-child td { border-bottom: none; }
+
+    /* ── CALLOUT ────────────────────────────────────────────── */
+    .callout {
+      display: flex;
+      gap: 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      margin: 20px 0;
+    }
+
+    .callout.info  { border-left: 3px solid var(--sky); }
+    .callout.warn  { border-left: 3px solid var(--amber); }
+    .callout.danger{ border-left: 3px solid var(--rose); }
+    .callout.ok    { border-left: 3px solid var(--emerald); }
+
+    .callout-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+
+    .callout-body { font-size: 9.5pt; color: var(--muted); line-height: 1.7; }
+    .callout-body strong { color: var(--text); }
+
+    /* ── TOC ────────────────────────────────────────────────── */
+    .toc {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px 32px;
+      margin-bottom: 48px;
+    }
+
+    .toc-title {
+      font-size: 12pt;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .toc-list {
+      list-style: none;
+    }
+
+    .toc-list li {
+      padding: 5px 0;
+      font-size: 9.5pt;
+      color: var(--muted);
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+    }
+
+    .toc-list li .toc-num {
+      color: var(--muted2);
+      font-size: 8.5pt;
+      min-width: 20px;
+    }
+
+    .toc-list li strong { color: var(--text); font-weight: 600; }
+
+    /* ── PRIORITY LEGEND ────────────────────────────────────── */
+    .legend {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin-bottom: 28px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 9pt;
+      color: var(--muted);
+    }
+
+    .legend-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* ── DIVIDER ────────────────────────────────────────────── */
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 40px 0;
+    }
+
+    /* ── PROGRESS BAR ───────────────────────────────────────── */
+    .progress-wrap {
+      margin-top: 28px;
+    }
+
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 8.5pt;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .progress-bar {
+      height: 8px;
+      background: var(--surface2);
+      border-radius: 50px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      border-radius: 50px;
+    }
+
+    .fill-critical { background: var(--rose); }
+    .fill-high     { background: var(--amber); }
+    .fill-medium   { background: var(--indigo); }
+    .fill-done     { background: var(--emerald); }
+
+    /* ── ARCH DIAGRAM ───────────────────────────────────────── */
+    .arch-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+      align-items: stretch;
+    }
+
+    .arch-box {
+      flex: 1;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+      text-align: center;
+    }
+
+    .arch-box .arch-label {
+      font-size: 9pt;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+
+    .arch-box .arch-sub {
+      font-size: 8pt;
+      color: var(--muted2);
+    }
+
+    .arch-arrow {
+      display: flex;
+      align-items: center;
+      color: var(--muted2);
+      font-size: 16pt;
+      padding: 0 4px;
+    }
+
+    /* ── PAGE BREAK ─────────────────────────────────────────── */
+    .page-break { page-break-before: always; }
+
+    h2.sub {
+      font-size: 13pt;
+      font-weight: 700;
+      color: var(--text);
+      margin: 28px 0 14px;
+    }
+
+    p.body-text {
+      font-size: 9.5pt;
+      color: var(--muted);
+      line-height: 1.75;
+      margin-bottom: 10px;
+    }
+
+    ul.body-list {
+      padding-left: 20px;
+      margin-bottom: 10px;
+    }
+
+    ul.body-list li {
+      font-size: 9.5pt;
+      color: var(--muted);
+      line-height: 1.75;
+      margin-bottom: 4px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!--  COVER                                                       -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div class="cover">
+  <div class="cover-badge">Documento Interno · Confidenziale</div>
+  <h1>Turni 568<br><span>Roadmap Tecnica</span></h1>
+  <div class="cover-subtitle">Analisi bug, interventi sicurezza e sviluppi futuri</div>
+  <div class="cover-divider"></div>
+  <div class="cover-meta">
+    <div class="cover-meta-item">
+      <div class="label">Versione</div>
+      <div class="value">1.0 – Aprile 2026</div>
+    </div>
+    <div class="cover-meta-item">
+      <div class="label">Progetto Supabase</div>
+      <div class="value">fnwuanftlhbqksldgafe</div>
+    </div>
+    <div class="cover-meta-item">
+      <div class="label">Repository</div>
+      <div class="value">MatVitale6/568-platform</div>
+    </div>
+    <div class="cover-meta-item">
+      <div class="label">Deploy</div>
+      <div class="value">568-platform.vercel.app</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!--  PAGE 1                                                      -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div class="page">
+
+  <!-- TOC -->
+  <div class="toc">
+    <div class="toc-title">Indice</div>
+    <ul class="toc-list">
+      <li><span class="toc-num">1.</span> <span><strong>Riepilogo stato attuale</strong> — cosa funziona, cosa è stato corretto</span></li>
+      <li><span class="toc-num">2.</span> <span><strong>Bug critici confermati</strong> — cache notifiche, Safari Push</span></li>
+      <li><span class="toc-num">3.</span> <span><strong>Problemi di sicurezza aperti</strong> — CORS, CSP, autorizzazione push</span></li>
+      <li><span class="toc-num">4.</span> <span><strong>Nuove funzionalità richieste</strong> — notifiche email, Telegram, multi-swap</span></li>
+      <li><span class="toc-num">5.</span> <span><strong>Miglioramenti UX / performance</strong> — polling rimosso, onboarding utenti</span></li>
+      <li><span class="toc-num">6.</span> <span><strong>Piano di sviluppo</strong> — priorità, dipendenze, stime</span></li>
+      <li><span class="toc-num">7.</span> <span><strong>Dettaglio tecnico implementazioni</strong> — architettura proposta</span></li>
+    </ul>
+  </div>
+
+  <!-- LEGEND -->
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--rose)"></div> Critico — blocca uso o dato</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--amber)"></div> Alto — impatta esperienza</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--indigo)"></div> Medio — funzionalità mancante</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--emerald)"></div> Basso / Già risolto</div>
+  </div>
+
+  <!-- ── SECTION 1 ─────────────────────────────────────────── -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">1</div>
+      <div>
+        <div class="section-title">Riepilogo stato attuale</div>
+        <div class="section-desc">Cosa è stato completato e verificato in produzione</div>
+      </div>
+    </div>
+
+    <div class="callout ok">
+      <div class="callout-icon">✅</div>
+      <div class="callout-body">
+        L'applicazione è operativa su <strong>568-platform.vercel.app</strong> con Supabase come backend.
+        Le funzionalità core — calendario turni, gestione dipendenti, richiesta cambio turno, push notifications Android/Chrome — sono state sviluppate, deployate e testate.
+      </div>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Componente</th>
+          <th>Stato</th>
+          <th>Note</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Login / Auth JWT</strong></td><td><span class="badge badge-done">✓ Attivo</span></td><td>Supabase GoTrue, JWT, RLS</td></tr>
+        <tr><td><strong>Calendario turni</strong></td><td><span class="badge badge-done">✓ Attivo</span></td><td>Realtime WebSocket, settimana navigabile</td></tr>
+        <tr><td><strong>Gestione dipendenti (admin)</strong></td><td><span class="badge badge-done">✓ Attivo</span></td><td>CRUD profiles + employees table</td></tr>
+        <tr><td><strong>Richiesta cambio turno</strong></td><td><span class="badge badge-done">✓ Attivo</span></td><td>RPC security-definer, RLS corretto</td></tr>
+        <tr><td><strong>Push notifications Android/Chrome</strong></td><td><span class="badge badge-done">✓ Attivo</span></td><td>VAPID, Edge Function send-push, service worker v3</td></tr>
+        <tr><td><strong>PWA / installabile</strong></td><td><span class="badge badge-done">✓ Attivo</span></td><td>manifest.webmanifest, logo, start_url=/calendar</td></tr>
+        <tr><td><strong>SPA routing Vercel</strong></td><td><span class="badge badge-done">✓ Attivo</span></td><td>vercel.json rewrites, no-cache headers</td></tr>
+        <tr><td><strong>Push Safari / iOS</strong></td><td><span class="badge badge-bug">✗ Non funziona</span></td><td>Vedi sezione 2</td></tr>
+        <tr><td><strong>Cache isolamento utenti</strong></td><td><span class="badge badge-bug">✗ Bug confermato</span></td><td>Notifiche di utente sbagliato dopo logout</td></tr>
+        <tr><td><strong>Polling 15s</strong></td><td><span class="badge badge-done">✓ Rimosso</span></td><td>Causa ri-rendering visibile, fix applicato</td></tr>
+        <tr><td><strong>Notifiche email</strong></td><td><span class="badge badge-feature">○ Da fare</span></td><td>Vedi sezione 4</td></tr>
+        <tr><td><strong>Notifiche Telegram</strong></td><td><span class="badge badge-feature">○ Da fare</span></td><td>Vedi sezione 4</td></tr>
+        <tr><td><strong>Multi-swap (primo accetta)</strong></td><td><span class="badge badge-feature">○ Da fare</span></td><td>Vedi sezione 4</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ── SECTION 2 ─────────────────────────────────────────── -->
+  <div class="section page-break">
+    <div class="section-header">
+      <div class="section-num">2</div>
+      <div>
+        <div class="section-title">Bug Critici Confermati</div>
+        <div class="section-desc">Problemi verificati in produzione che impattano direttamente l'uso</div>
+      </div>
+    </div>
+
+    <!-- BUG 1: Cache notifiche -->
+    <div class="card priority-critical">
+      <div class="card-header">
+        <div class="card-icon" style="background:rgba(244,63,94,0.15); color:#fda4af;">🔴</div>
+        <div>
+          <div class="card-title">B-01 — Notifiche arrivano all'utente sbagliato dopo logout/login</div>
+          <div class="card-meta">
+            <span class="badge badge-critical">Critico</span>
+            <span class="badge badge-bug">Bug</span>
+            <span class="badge badge-security">Sicurezza</span>
+          </div>
+        </div>
+      </div>
+      <div class="card-body">
+        <p><strong>Sintomo:</strong> Accedendo con Irene, attivando le push, poi disconnettendo e accedendo come Emma sullo stesso dispositivo, le notifiche push continuano ad arrivare come se fossero destinate a Irene.</p>
+        <p><strong>Causa radice:</strong> Il service worker e la push subscription rimangono registrati nel browser con l'endpoint VAPID associato al profilo di Irene. Al logout, <code>disable_push_subscription()</code> viene chiamato ma agisce solo lato DB — il service worker non viene de-registrato. Al successivo login di Emma, viene chiamato <code>register_push_subscription()</code> che sovrascrive la subscription nel DB, ma il browser mantiene ancora la vecchia registrazione attiva del service worker di Irene (o la nuova subscription ha lo stesso endpoint fisico, causando ambiguità).</p>
+        <p><strong>Impatto:</strong> Privacy — un utente riceve notifiche destinate a un altro. Su un dispositivo condiviso tra colleghi questo è inaccettabile.</p>
+        <p><strong>Fix proposto:</strong></p>
+        <ul style="padding-left:18px; margin-top:6px;">
+          <li>Al logout: chiamare <code>pushManager.getSubscription()</code> e poi <code>subscription.unsubscribe()</code> per de-registrare fisicamente il browser, non solo lato DB.</li>
+          <li>Al login: registrare sempre una nuova subscription fresca, confrontare l'endpoint con quello nel DB e forzare sovrascrittura.</li>
+          <li>Aggiungere lato Edge Function: validare che <code>profile_id</code> della subscription ricevuta appartiene all'utente che sta facendo la richiesta.</li>
+        </ul>
+      </div>
+      <div class="effort-row">
+        <div class="effort-pill"><div class="dot" style="background:var(--amber)"></div> Sforzo: Basso (2-3h)</div>
+        <div class="effort-pill"><div class="dot" style="background:var(--rose)"></div> Priorità: Immediata</div>
+        <div class="effort-pill">File: <code>usePushNotifications.js</code>, <code>AuthContext.jsx</code></div>
+      </div>
+    </div>
+
+    <!-- BUG 2: Safari -->
+    <div class="card priority-high">
+      <div class="card-header">
+        <div class="card-icon" style="background:rgba(245,158,11,0.15); color:#fcd34d;">🟡</div>
+        <div>
+          <div class="card-title">B-02 — Push Notifications non funzionano su Safari / iOS</div>
+          <div class="card-meta">
+            <span class="badge badge-high">Alto</span>
+            <span class="badge badge-bug">Bug</span>
+          </div>
+        </div>
+      </div>
+      <div class="card-body">
+        <p><strong>Sintomo:</strong> Su Safari (iPhone/iPad/Mac), il pulsante "Attiva notifiche" non funziona o non richiede il permesso.</p>
+        <p><strong>Causa radice:</strong> Apple ha aggiunto supporto Web Push solo in iOS 16.4+ (marzo 2023) e macOS Ventura. Ci sono tre vincoli aggiuntivi rispetto a Chrome/Firefox:</p>
+        <ul style="padding-left:18px; margin-top:6px;">
+          <li><strong>Solo come PWA installata</strong> — su iOS le Web Push funzionano SOLO se l'app è stata aggiunta alla home screen (modalità standalone). Da browser Safari non è possibile.</li>
+          <li><strong>Richiede gesture utente</strong> — la richiesta del permesso deve essere eseguita direttamente dentro un evento click (non in un useEffect o timeout). Safari è più restrittivo di Chrome.</li>
+          <li><strong>Service Worker scope</strong> — Safari richiede che il service worker sia nella root del sito; il nostro <code>push-sw-v2.js</code> è in root ma la registrazione deve specificare correttamente lo scope.</li>
+        </ul>
+        <p><strong>Fix proposto:</strong></p>
+        <ul style="padding-left:18px; margin-top:6px;">
+          <li>Rilevare se l'utente è su Safari con <code>navigator.vendor.includes('Apple')</code>.</li>
+          <li>Se non è in modalità standalone (<code>window.navigator.standalone !== true</code>), mostrare un banner esplicativo: <em>"Su iPhone installa prima l'app (Condividi → Aggiungi a Home) per ricevere notifiche"</em>.</li>
+          <li>Assicurarsi che la chiamata a <code>Notification.requestPermission()</code> avvenga sincronicamente dentro l'handler del click.</li>
+          <li>Per macOS Safari, testare che il VAPID endpoint funzioni (Apple usa un endpoint diverso: <code>https://web.push.apple.com</code>).</li>
+        </ul>
+        <p><strong>Limitazione residua:</strong> Le push su Safari iOS non sono del tutto paragonabili a quelle Android in termini di affidabilità. Questo è un vincolo di piattaforma, non del nostro codice.</p>
+      </div>
+      <div class="effort-row">
+        <div class="effort-pill"><div class="dot" style="background:var(--amber)"></div> Sforzo: Medio (4-6h)</div>
+        <div class="effort-pill"><div class="dot" style="background:var(--amber)"></div> Priorità: Alta</div>
+        <div class="effort-pill">File: <code>usePushNotifications.js</code>, UI notifica</div>
+      </div>
+    </div>
+
+    <!-- BUG 3: Onboarding utenti -->
+    <div class="card priority-high">
+      <div class="card-header">
+        <div class="card-icon" style="background:rgba(245,158,11,0.15); color:#fcd34d;">🟡</div>
+        <div>
+          <div class="card-title">B-03 — Onboarding utenti richiede 3 step manuali</div>
+          <div class="card-meta">
+            <span class="badge badge-high">Alto</span>
+            <span class="badge badge-ux">UX</span>
+          </div>
+        </div>
+      </div>
+      <div class="card-body">
+        <p><strong>Sintomo:</strong> Per creare un nuovo utente l'admin deve: (1) creare il profilo dall'app, (2) invitarlo manualmente dalla dashboard Supabase, (3) eseguire una query SQL per collegare <code>auth_user_id</code> al profilo. Attualmente il bottone "Invita" nell'app non manda nessuna email reale.</p>
+        <p><strong>Fix proposto:</strong></p>
+        <ul style="padding-left:18px; margin-top:6px;">
+          <li>Creare un trigger PostgreSQL <code>on_auth_user_created</code> che al primo login cerca un profilo con la stessa email e setta automaticamente <code>auth_user_id</code>.</li>
+          <li>Collegare il bottone "Invita" a <code>supabase.auth.admin.inviteUserByEmail(email)</code> tramite una Edge Function con service role key (la anon key non ha i permessi admin).</li>
+        </ul>
+      </div>
+      <div class="effort-row">
+        <div class="effort-pill"><div class="dot" style="background:var(--emerald)"></div> Sforzo: Medio (3-5h)</div>
+        <div class="effort-pill"><div class="dot" style="background:var(--amber)"></div> Priorità: Alta</div>
+        <div class="effort-pill">File: SQL trigger, nuova Edge Function <code>invite-user</code></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SECTION 3 ─────────────────────────────────────────── -->
+  <div class="section page-break">
+    <div class="section-header">
+      <div class="section-num">3</div>
+      <div>
+        <div class="section-title">Problemi di Sicurezza Aperti</div>
+        <div class="section-desc">Identificati durante l'analisi OWASP, non ancora risolti</div>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <div class="callout-icon">⚠️</div>
+      <div class="callout-body">
+        Questi problemi non bloccano l'uso dell'app ma rappresentano vulnerabilità reali. Andrebbero corretti prima di un rollout a utenti reali.
+      </div>
+    </div>
+
+    <div class="card priority-high">
+      <div class="card-header">
+        <div class="card-icon" style="background:rgba(245,158,11,0.13); color:#fcd34d;">🔒</div>
+        <div>
+          <div class="card-title">S-01 — CORS wildcard sull'Edge Function send-push</div>
+          <div class="card-meta">
+            <span class="badge badge-high">Alto</span>
+            <span class="badge badge-security">Sicurezza</span>
+          </div>
+        </div>
+      </div>
+      <div class="card-body">
+        <p><strong>Problema:</strong> L'header <code>Access-Control-Allow-Origin: *</code> permette a qualsiasi dominio web di invocare la funzione <code>send-push</code>. Anche se c'è validazione JWT interna, un attaccante con un JWT valido potrebbe inviare push a qualsiasi profilo.</p>
+        <p><strong>Fix:</strong> Sostituire <code>*</code> con <code>https://568-platform.vercel.app</code> nell'header CORS della Edge Function.</p>
+      </div>
+      <div class="effort-row">
+        <div class="effort-pill">Sforzo: Minuto (15 min)</div>
+        <div class="effort-pill">File: <code>supabase/functions/send-push/index.ts</code></div>
+      </div>
+    </div>
+
+    <div class="card priority-high">
+      <div class="card-header">
+        <div class="card-icon" style="background:rgba(245,158,11,0.13); color:#fcd34d;">🔒</div>
+        <div>
+          <div class="card-title">S-02 — Nessuna validazione sull'autorizzazione push</div>
+          <div class="card-meta">
+            <span class="badge badge-high">Alto</span>
+            <span class="badge badge-security">Sicurezza</span>
+          </div>
+        </div>
+      </div>
+      <div class="card-body">
+        <p><strong>Problema:</strong> L'Edge Function <code>send-push</code> accetta come parametro <code>profileIds</code> e manda notifiche a chiunque. Un utente autenticato potrebbe tecnicamente inviare notifiche push a tutti i dipendenti, non solo a quelli coinvolti nel proprio cambio turno.</p>
+        <p><strong>Fix:</strong> Nella Edge Function, dopo aver estratto l'utente dal JWT, verificare che i <code>profileIds</code> richiesti siano effettivamente coinvolti in uno swap_request dove il chiamante è requester o target.</p>
+      </div>
+      <div class="effort-row">
+        <div class="effort-pill"><div class="dot" style="background:var(--amber)"></div> Sforzo: Basso (1-2h)</div>
+        <div class="effort-pill">File: <code>supabase/functions/send-push/index.ts</code></div>
+      </div>
+    </div>
+
+    <div class="card priority-medium">
+      <div class="card-header">
+        <div class="card-icon" style="background:rgba(99,102,241,0.13); color:var(--indigo-light);">🔒</div>
+        <div>
+          <div class="card-title">S-03 — Content-Security-Policy assente</div>
+          <div class="card-meta">
+            <span class="badge badge-medium">Medio</span>
+            <span class="badge badge-security">Sicurezza</span>
+          </div>
+        </div>
+      </div>
+      <div class="card-body">
+        <p><strong>Problema:</strong> Nessun header CSP nel <code>vercel.json</code>. In assenza di CSP, un potenziale XSS (anche derivante da dipendenze npm compromesse) potrebbe esfiltrare i JWT o i dati degli utenti.</p>
+        <p><strong>Fix:</strong> Aggiungere in <code>vercel.json</code> un header <code>Content-Security-Policy</code> per limitare le origini da cui possono essere caricati script, stili e connessioni.</p>
+        <pre><span class="comment">// vercel.json — aggiunta header CSP</span>
+{
+  "key": "Content-Security-Policy",
+  "value": "default-src 'self'; connect-src 'self' https://*.supabase.co wss://*.supabase.co; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:;"
+}</pre>
+      </div>
+      <div class="effort-row">
+        <div class="effort-pill">Sforzo: Minuto (20 min)</div>
+        <div class="effort-pill">File: <code>vercel.json</code></div>
+      </div>
+    </div>
+
+    <div class="card priority-low">
+      <div class="card-header">
+        <div class="card-icon" style="background:rgba(16,185,129,0.13); color:#6ee7b7;">🔒</div>
+        <div>
+          <div class="card-title">S-04/07 — Header HTTP di sicurezza mancanti</div>
+          <div class="card-meta">
+            <span class="badge badge-low">Basso</span>
+            <span class="badge badge-security">Sicurezza</span>
+          </div>
+        </div>
+      </div>
+      <div class="card-body">
+        <p>Mancano in <code>vercel.json</code>: <code>X-Frame-Options: DENY</code> (anti-clickjacking), <code>X-Content-Type-Options: nosniff</code> (anti MIME sniffing), <code>Referrer-Policy: strict-origin-when-cross-origin</code>. Questi sono ignorabili nell'immediato ma consigliati.</p>
+      </div>
+      <div class="effort-row">
+        <div class="effort-pill">Sforzo: 10 minuti</div>
+        <div class="effort-pill">File: <code>vercel.json</code></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SECTION 4 ─────────────────────────────────────────── -->
+  <div class="section page-break">
+    <div class="section-header">
+      <div class="section-num">4</div>
+      <div>
+        <div class="section-title">Nuove Funzionalità Richieste</div>
+        <div class="section-desc">Feature proposte che richiedono sviluppo ex-novo</div>
+      </div>
+    </div>
+
+    <!-- FEATURE 1: multi-swap -->
+    <div class="card priority-high">
+      <div class="card-header">
+        <div class="card-icon" style="background:rgba(56,189,248,0.13); color:var(--sky);">🔀</div>
+        <div>
+          <div class="card-title">F-01 — Multi-swap: richiesta a più persone, primo che accetta vince</div>
+          <div class="card-meta">
+            <span class="badge badge-high">Alto</span>
+            <span class="badge badge-feature">Feature</span>
+          </div>
+        </div>
+      </div>
+      <div class="card-body">
+        <p><strong>Richiesta:</strong> Un dipendente deve poter inviare la richiesta di cambio turno a più colleghi contemporaneamente. Quando uno accetta, gli altri vengono automaticamente annullati.</p>
+        <p><strong>Impatto sul DB:</strong> Nessuna modifica allo schema — la tabella <code>swap_requests</code> già supporta righe multiple per lo stesso <code>shift_id</code>. Serve modificare le RPC e le policy RLS.</p>
+        <p><strong>Cambiamenti richiesti:</strong></p>
+        <ul style="padding-left:18px; margin-top:6px;">
+          <li><strong>RPC <code>create_swap_request</code></strong>: rimuovere il vincolo "una sola richiesta pendente per turno", accettare array di <code>target_employee_id</code>.</li>
+          <li><strong>RPC <code>respond_to_swap_request</code></strong>: al momento dell'accettazione, fare un <code>UPDATE swap_requests SET status='cancelled' WHERE shift_id=... AND status='pending' AND id != accettata</code>.</li>
+          <li><strong>UI <code>Requests.jsx</code></strong>: mostrare la lista dei destinatari di una richiesta multipla; evidenziare "in attesa di risposta da N persone".</li>
+          <li><strong>Notifiche</strong>: quando qualcuno accetta, notificare il richiedente + tutti gli altri destinatari che la richiesta è stata chiusa.</li>
+        </ul>
+        <p><strong>Edge case:</strong> Se due persone accettano simultaneamente (race condition), la RPC deve usare <code>SELECT ... FOR UPDATE</code> o una transazione per garantire che solo una accettazione vada a buon fine.</p>
+      </div>
+      <div class="effort-row">
+        <div class="effort-pill"><div class="dot" style="background:var(--amber)"></div> Sforzo: Alto (8-12h)</div>
+        <div class="effort-pill"><div class="dot" style="background:var(--amber)"></div> Priorità: Alta</div>
+        <div class="effort-pill">File: SQL RPCs, <code>Requests.jsx</code>, <code>RequestsContext.jsx</code></div>
+      </div>
+    </div>
+
+    <!-- FEATURE 2: email notifications -->
+    <div class="card priority-medium">
+      <div class="card-header">
+        <div class="card-icon" style="background:rgba(99,102,241,0.13); color:var(--indigo-light);">📧</div>
+        <div>
+          <div class="card-title">F-02 — Notifiche via Email</div>
+          <div class="card-meta">
+            <span class="badge badge-medium">Medio</span>
+            <span class="badge badge-feature">Feature</span>
+          </div>
+        </div>
+      </div>
+      <div class="card-body">
+        <p><strong>Motivazione:</strong> Le push web non funzionano su Safari, e su Android potrebbero non arrivare se le notifiche dell'app sono disabilitate nelle impostazioni del telefono. L'email è il canale più affidabile e universale.</p>
+        <p><strong>Architettura proposta:</strong></p>
+        <ul style="padding-left:18px; margin-top:6px;">
+          <li>Usare <strong>Resend</strong> (resend.com) — si integra nativamente con Supabase Edge Functions tramite API REST, piano gratuito 3.000 email/mese.</li>
+          <li>Creare una nuova Edge Function <code>send-email</code> (o aggiungere logica in <code>send-push</code>) che accetta <code>{ to, subject, html }</code> e chiama l'API Resend.</li>
+          <li>Nei casi di swap request (nuova richiesta, accettata, rifiutata) mandare email in parallelo alle push.</li>
+          <li>Aggiungere un campo <code>email_notifications: boolean</code> nelle preferenze utente (tabella <code>profiles</code>) per permettere opt-out.</li>
+        </ul>
+        <p><strong>Template email minimo:</strong> oggetto strutturato con nome richiedente, data turno, link alla app per rispondere.</p>
+      </div>
+      <div class="effort-row">
+        <div class="effort-pill"><div class="dot" style="background:var(--indigo)"></div> Sforzo: Medio (4-6h)</div>
+        <div class="effort-pill">Dipendenza: account Resend + dominio verificato</div>
+        <div class="effort-pill">File: nuova Edge Function, <code>RequestsContext.jsx</code></div>
+      </div>
+    </div>
+
+    <!-- FEATURE 3: telegram notifications -->
+    <div class="card priority-medium">
+      <div class="card-header">
+        <div class="card-icon" style="background:rgba(56,189,248,0.13); color:var(--sky);">✈️</div>
+        <div>
+          <div class="card-title">F-03 — Notifiche via Telegram Bot</div>
+          <div class="card-meta">
+            <span class="badge badge-medium">Medio</span>
+            <span class="badge badge-feature">Feature</span>
+          </div>
+        </div>
+      </div>
+      <div class="card-body">
+        <p><strong>Motivazione:</strong> Telegram è ampiamente usato. Un bot Telegram garantisce notifiche affidabili, visibili, con possibilità di risposta diretta. Funziona su qualsiasi dispositivo senza dipendere dal supporto PWA/browser.</p>
+        <p><strong>Architettura proposta:</strong></p>
+        <ul style="padding-left:18px; margin-top:6px;">
+          <li>Creare un bot Telegram via <strong>@BotFather</strong> → ottenere il <code>BOT_TOKEN</code>.</li>
+          <li>Aggiungere un campo <code>telegram_chat_id: text</code> alla tabella <code>profiles</code>.</li>
+          <li>Creare una pagina/flow nell'app per il collegamento: l'utente apre il bot su Telegram, il bot risponde con un codice temporaneo, l'utente lo incolla nell'app → l'app salva il <code>chat_id</code> nel profilo.</li>
+          <li>Nella Edge Function <code>send-push</code> (o una nuova <code>send-notification</code>) aggiungere una chiamata <code>POST https://api.telegram.org/bot{TOKEN}/sendMessage</code> per ogni utente con <code>telegram_chat_id</code> impostato.</li>
+        </ul>
+        <p><strong>Pro Telegram vs Email:</strong> messaggio istantaneo, nessuno spam filter, possibile aggiungere pulsanti inline per accettare/rifiutare direttamente da Telegram (richiede webhook Telegram).</p>
+      </div>
+      <div class="effort-row">
+        <div class="effort-pill"><div class="dot" style="background:var(--indigo)"></div> Sforzo: Alto (8-10h con inline buttons)</div>
+        <div class="effort-pill">Dipendenza: bot Telegram creato, BOT_TOKEN in Supabase secrets</div>
+        <div class="effort-pill">File: schema SQL, Edge Function, UI collegamento</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SECTION 5 ─────────────────────────────────────────── -->
+  <div class="section page-break">
+    <div class="section-header">
+      <div class="section-num">5</div>
+      <div>
+        <div class="section-title">Miglioramenti UX e Performance</div>
+        <div class="section-desc">Già aggiunto e ulteriori ottimizzazioni identificate</div>
+      </div>
+    </div>
+
+    <div class="card priority-done">
+      <div class="card-header">
+        <div class="card-icon" style="background:rgba(100,116,139,0.13); color:var(--muted);">✅</div>
+        <div>
+          <div class="card-title">U-01 — Rimozione polling 15 secondi (RISOLTO)</div>
+          <div class="card-meta">
+            <span class="badge badge-done">Risolto</span>
+            <span class="badge badge-ux">UX</span>
+          </div>
+        </div>
+      </div>
+      <div class="card-body">
+        <p><strong>Problema:</strong> <code>RequestsContext.jsx</code> e <code>useCalendar.js</code> eseguivano un re-fetch ogni 15 secondi, causando ri-rendering visibile dei componenti. Lo stesso osservato da un consulente esterno come "la pagina si ricostruisce periodicamente".</p>
+        <p><strong>Fix applicato:</strong> Rimossi entrambi i <code>setInterval</code>. L'aggiornamento avviene ora solo tramite Realtime WebSocket (Supabase) e all'evento <code>visibilitychange</code> (quando si torna sulla tab/app). Zero polling attivo.</p>
+      </div>
+    </div>
+
+    <div class="card priority-medium">
+      <div class="card-header">
+        <div class="card-icon" style="background:rgba(99,102,241,0.13); color:var(--indigo-light);">⚡</div>
+        <div>
+          <div class="card-title">U-02 — Indicatore di stato notifiche più chiaro</div>
+          <div class="card-meta">
+            <span class="badge badge-medium">Medio</span>
+            <span class="badge badge-ux">UX</span>
+          </div>
+        </div>
+      </div>
+      <div class="card-body">
+        <p>Il pulsante "Attiva notifiche" non dà feedback sullo stato attuale su Safari/iOS. Proposto: mostrare stati distinti — <em>Non supportato</em>, <em>Installa prima l'app</em>, <em>Attive</em>, <em>Disabilitate dal sistema</em> — con istruzioni contestuali.</p>
+      </div>
+      <div class="effort-row">
+        <div class="effort-pill">Sforzo: Basso (1-2h)</div>
+        <div class="effort-pill">File: <code>usePushNotifications.js</code>, componente UI</div>
+      </div>
+    </div>
+
+    <div class="card priority-low">
+      <div class="card-header">
+        <div class="card-icon" style="background:rgba(16,185,129,0.13); color:#6ee7b7;">⚡</div>
+        <div>
+          <div class="card-title">U-03 — Onboarding utenti automatizzato</div>
+          <div class="card-meta">
+            <span class="badge badge-low">Basso</span>
+            <span class="badge badge-ux">UX</span>
+          </div>
+        </div>
+      </div>
+      <div class="card-body">
+        <p>Vedi B-03. Il trigger PostgreSQL <code>handle_new_user</code> risolverebbe in automatico il collegamento <code>auth_user_id</code> al profilo senza richiedere SQL manuale. Collegare il bottone "Invita" a una Edge Function con service role key per mandare email di invito reale.</p>
+      </div>
+      <div class="effort-row">
+        <div class="effort-pill">Sforzo: Medio (3-4h)</div>
+        <div class="effort-pill">File: SQL trigger, Edge Function <code>invite-user</code></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SECTION 6 ─────────────────────────────────────────── -->
+  <div class="section page-break">
+    <div class="section-header">
+      <div class="section-num">6</div>
+      <div>
+        <div class="section-title">Piano di Sviluppo</div>
+        <div class="section-desc">Priorità, dipendenze e stima sforzo per ogni intervento</div>
+      </div>
+    </div>
+
+    <h2 class="sub">Sprint 1 — Correzioni immediate (1-2 giorni)</h2>
+    <p class="body-text">Da eseguire prima di aprire l'app a utenti reali.</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Titolo</th>
+          <th>Priorità</th>
+          <th>Sforzo</th>
+          <th>File chiave</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>B-01</strong></td>
+          <td>Fix cache notifiche utente sbagliato</td>
+          <td><span class="badge badge-critical">Critico</span></td>
+          <td>2-3h</td>
+          <td><code>usePushNotifications.js</code></td>
+        </tr>
+        <tr>
+          <td><strong>S-01</strong></td>
+          <td>CORS wildcard → dominio specifico</td>
+          <td><span class="badge badge-high">Alto</span></td>
+          <td>15 min</td>
+          <td><code>send-push/index.ts</code></td>
+        </tr>
+        <tr>
+          <td><strong>S-02</strong></td>
+          <td>Validare profileIds rispetto a swap_requests</td>
+          <td><span class="badge badge-high">Alto</span></td>
+          <td>1-2h</td>
+          <td><code>send-push/index.ts</code></td>
+        </tr>
+        <tr>
+          <td><strong>S-03</strong></td>
+          <td>Aggiungere header CSP in vercel.json</td>
+          <td><span class="badge badge-medium">Medio</span></td>
+          <td>20 min</td>
+          <td><code>vercel.json</code></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2 class="sub">Sprint 2 — Bug importanti (3-5 giorni)</h2>
+
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Titolo</th>
+          <th>Priorità</th>
+          <th>Sforzo</th>
+          <th>Note</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>B-02</strong></td>
+          <td>Support Safari push (banner + detection)</td>
+          <td><span class="badge badge-high">Alto</span></td>
+          <td>4-6h</td>
+          <td>Vincolo iOS: solo da PWA installata</td>
+        </tr>
+        <tr>
+          <td><strong>B-03</strong></td>
+          <td>Onboarding utenti automatizzato</td>
+          <td><span class="badge badge-high">Alto</span></td>
+          <td>3-5h</td>
+          <td>Trigger SQL + Edge Function invite</td>
+        </tr>
+        <tr>
+          <td><strong>F-01</strong></td>
+          <td>Multi-swap primo accetta vince</td>
+          <td><span class="badge badge-high">Alto</span></td>
+          <td>8-12h</td>
+          <td>Race condition da gestire</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2 class="sub">Sprint 3 — Nuovi canali di notifica (1-2 settimane)</h2>
+
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Titolo</th>
+          <th>Priorità</th>
+          <th>Sforzo</th>
+          <th>Dipendenza esterna</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>F-02</strong></td>
+          <td>Notifiche Email via Resend</td>
+          <td><span class="badge badge-medium">Medio</span></td>
+          <td>4-6h</td>
+          <td>Account Resend + dominio</td>
+        </tr>
+        <tr>
+          <td><strong>F-03</strong></td>
+          <td>Notifiche Telegram Bot</td>
+          <td><span class="badge badge-medium">Medio</span></td>
+          <td>8-10h</td>
+          <td>Bot Telegram, BOT_TOKEN secret</td>
+        </tr>
+        <tr>
+          <td><strong>U-02</strong></td>
+          <td>UI notifiche migliorata (stati Safari)</td>
+          <td><span class="badge badge-medium">Medio</span></td>
+          <td>1-2h</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td><strong>S-04</strong></td>
+          <td>Header sicurezza aggiuntivi</td>
+          <td><span class="badge badge-low">Basso</span></td>
+          <td>10 min</td>
+          <td>—</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Progress bars summary -->
+    <div class="progress-wrap">
+      <div class="progress-label"><span>Critici risolti</span><span>1 / 2</span></div>
+      <div class="progress-bar"><div class="progress-fill fill-critical" style="width:50%"></div></div>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-label"><span>Bug risolti</span><span>1 / 4</span></div>
+      <div class="progress-bar"><div class="progress-fill fill-high" style="width:25%"></div></div>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-label"><span>Feature implementate</span><span>0 / 3</span></div>
+      <div class="progress-bar"><div class="progress-fill fill-medium" style="width:0%"></div></div>
+    </div>
+  </div>
+
+  <!-- ── SECTION 7 ─────────────────────────────────────────── -->
+  <div class="section page-break">
+    <div class="section-header">
+      <div class="section-num">7</div>
+      <div>
+        <div class="section-title">Dettaglio Tecnico Implementazioni</div>
+        <div class="section-desc">Architettura proposta per le feature principali</div>
+      </div>
+    </div>
+
+    <!-- Multi-swap architecture -->
+    <h2 class="sub">F-01 — Architettura Multi-swap</h2>
+    <p class="body-text">Il flusso attuale permette una sola richiesta pendente per turno. Va esteso senza rompere il comportamento esistente.</p>
+
+    <div class="arch-row">
+      <div class="arch-box">
+        <div class="arch-label">Utente A</div>
+        <div class="arch-sub">Seleziona turno + N colleghi</div>
+      </div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-box">
+        <div class="arch-label">RPC create_swap_request</div>
+        <div class="arch-sub">Inserisce N righe in swap_requests (una per target)</div>
+      </div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-box">
+        <div class="arch-label">send-push</div>
+        <div class="arch-sub">Notifica tutti gli N colleghi</div>
+      </div>
+    </div>
+    <div class="arch-row" style="margin-top:8px;">
+      <div class="arch-box">
+        <div class="arch-label">Collega B accetta</div>
+        <div class="arch-sub">Prima risposta</div>
+      </div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-box" style="border-color: var(--emerald)">
+        <div class="arch-label">RPC respond_to_swap_request</div>
+        <div class="arch-sub">Accetta la riga di B, annulla tutte le altre (stesso shift_id)</div>
+      </div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-box">
+        <div class="arch-label">Notifiche</div>
+        <div class="arch-sub">A: "B ha accettato". C,D,E: "Non più necessario"</div>
+      </div>
+    </div>
+
+    <pre><span class="comment">-- RPC aggiornata: respond_to_swap_request con cancellazione parallela</span>
+<span class="kw">BEGIN</span>;
+  <span class="comment">-- 1. Accetta la richiesta scelta</span>
+  <span class="kw">UPDATE</span> swap_requests
+  <span class="kw">SET</span> status = <span class="str">'accepted'</span>, responded_at = now()
+  <span class="kw">WHERE</span> id = p_request_id
+  <span class="kw">AND</span> status = <span class="str">'pending'</span>
+  <span class="kw">AND</span> target_employee_id = auth.uid()
+  <span class="kw">FOR UPDATE</span>; <span class="comment">-- evita race condition</span>
+
+  <span class="comment">-- 2. Annulla tutte le altre richieste sullo stesso turno</span>
+  <span class="kw">UPDATE</span> swap_requests
+  <span class="kw">SET</span> status = <span class="str">'cancelled'</span>
+  <span class="kw">WHERE</span> shift_id = (SELECT shift_id FROM swap_requests WHERE id = p_request_id)
+  <span class="kw">AND</span> id != p_request_id
+  <span class="kw">AND</span> status = <span class="str">'pending'</span>;
+<span class="kw">COMMIT</span>;</pre>
+
+    <!-- Notification channels architecture -->
+    <h2 class="sub">F-02 + F-03 — Architettura Notifiche Multi-canale</h2>
+    <p class="body-text">Proposto: una Edge Function unificata <code>send-notification</code> che gestisce tutti i canali in parallelo.</p>
+
+    <div class="arch-row">
+      <div class="arch-box">
+        <div class="arch-label">RequestsContext</div>
+        <div class="arch-sub">invoke('send-notification', { profileIds, title, body, url })</div>
+      </div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-box" style="border-color: var(--indigo)">
+        <div class="arch-label">Edge Function send-notification</div>
+        <div class="arch-sub">Recupera profili (push_endpoint, email, telegram_chat_id)</div>
+      </div>
+    </div>
+    <div class="arch-row" style="margin-top:8px;">
+      <div class="arch-box">
+        <div class="arch-label">Web Push (VAPID)</div>
+        <div class="arch-sub">Android / Chrome / Desktop</div>
+      </div>
+      <div class="arch-box">
+        <div class="arch-label">Resend API</div>
+        <div class="arch-sub">Email HTML → tutti i dispositivi</div>
+      </div>
+      <div class="arch-box">
+        <div class="arch-label">Telegram Bot API</div>
+        <div class="arch-sub">Messaggio istantaneo + pulsanti inline</div>
+      </div>
+    </div>
+
+    <pre><span class="comment">// send-notification/index.ts — struttura logica</span>
+<span class="kw">const</span> results = <span class="kw">await</span> Promise.allSettled([
+  pushEnabled  ? <span class="fn">sendWebPush</span>(subscription, payload)     : null,
+  emailEnabled ? <span class="fn">sendEmail</span>(email, subject, html)           : null,
+  telegramEnabled ? <span class="fn">sendTelegram</span>(chat_id, message)         : null,
+])</pre>
+
+    <!-- Fix B-01 cache -->
+    <h2 class="sub">B-01 — Fix logout push subscription</h2>
+    <pre><span class="comment">// usePushNotifications.js — da aggiungere al logout</span>
+<span class="kw">const</span> <span class="fn">unsubscribeOnLogout</span> = <span class="kw">async</span> () => {
+  <span class="kw">const</span> registration = <span class="kw">await</span> navigator.serviceWorker.ready
+  <span class="kw">const</span> subscription = <span class="kw">await</span> registration.pushManager.getSubscription()
+  <span class="kw">if</span> (subscription) {
+    <span class="kw">await</span> subscription.<span class="fn">unsubscribe</span>()   <span class="comment">// rimuove fisicamente dal browser</span>
+  }
+  <span class="kw">await</span> supabase.<span class="fn">rpc</span>(<span class="str">'disable_push_subscription'</span>)  <span class="comment">// disattiva nel DB</span>
+}</pre>
+
+    <div class="callout info">
+      <div class="callout-icon">ℹ️</div>
+      <div class="callout-body">
+        <strong>Nota sul Telegram Bot:</strong> Per implementare la risposta diretta da Telegram (accettare/rifiutare il cambio dal messaggio), è necessario configurare un Webhook Telegram che punta a una Edge Function. Questo aumenta lo sforzo a ~12-15h ma rende il sistema molto più comodo per l'utente mobile.
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <div class="callout-icon">⚠️</div>
+      <div class="callout-body">
+        <strong>Ordine di esecuzione consigliato:</strong> Prima B-01 (privacy), poi S-01 (CORS) e S-03 (CSP) — sono operazioni di 15-20 minuti ciascuna. Poi F-01 (multi-swap) che è la feature più richiesta. Email e Telegram come step successivo una volta che il flusso di swap è stabile.
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+</body>
+</html>
