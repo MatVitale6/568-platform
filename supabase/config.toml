@@ -221,6 +221,12 @@ otp_expiry = 3600
 
 [functions.send-push]
 verify_jwt = false
+
+[functions.send-email]
+verify_jwt = false
+
+[functions.weekly-digest]
+verify_jwt = false
 # enabled = true
 # host = "smtp.sendgrid.net"
 # port = 587

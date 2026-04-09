@@ -48,12 +48,7 @@ async function sendPushNotification({ profileIds, title, body, url }) {
 
   try {
     const { data, error } = await supabase.functions.invoke('send-push', {
-      body: {
-        profileIds,
-        title,
-        body,
-        url,
-      },
+      body: { profileIds, title, body, url },
     })
 
     if (error) {
@@ -66,6 +61,19 @@ async function sendPushNotification({ profileIds, title, body, url }) {
     }
   } catch {
     // Non blocchiamo il flusso applicativo se la notifica esterna fallisce.
+  }
+}
+
+async function sendEmailNotification({ type, requesterId, targetId, workDate }) {
+  if (!isSupabaseConfigured || !supabase) return
+
+  try {
+    const { error } = await supabase.functions.invoke('send-email', {
+      body: { type, requesterId, targetId, workDate },
+    })
+    if (error) console.warn('send-email invoke error', error)
+  } catch {
+    // Non blocchiamo il flusso se l'email fallisce.
   }
 }
 
@@ -226,12 +234,27 @@ export function RequestsProvider({ children }) {
       throw rpcError
     }
 
-    await sendPushNotification({
-      profileIds: [targetEmployeeId],
-      title: 'Nuova richiesta cambio turno',
-      body: `${user.name} ti ha inviato una richiesta di cambio turno`,
-      url: '/requests',
-    })
+    // Carica work_date della shift per includerla nell'email
+    const { data: shiftRow } = await supabase
+      .from('shifts')
+      .select('work_date')
+      .eq('id', shiftId)
+      .maybeSingle()
+
+    await Promise.all([
+      sendPushNotification({
+        profileIds: [targetEmployeeId],
+        title: 'Nuova richiesta cambio turno',
+        body: `${user.name} ti ha inviato una richiesta di cambio turno`,
+        url: '/requests',
+      }),
+      sendEmailNotification({
+        type: 'swap_new',
+        requesterId: user.id,
+        targetId: targetEmployeeId,
+        workDate: shiftRow?.work_date ?? '',
+      }),
+    ])
 
     await reloadRequests()
   }
@@ -252,12 +275,21 @@ export function RequestsProvider({ children }) {
     }
 
     if (request?.requesterId) {
-      await sendPushNotification({
-        profileIds: [request.requesterId],
-        title: decision === 'accepted' ? 'Richiesta accettata' : 'Richiesta rifiutata',
-        body: `${user.name} ha ${decision === 'accepted' ? 'accettato' : 'rifiutato'} la tua richiesta di cambio turno`,
-        url: '/requests',
-      })
+      const emailType = decision === 'accepted' ? 'swap_accepted' : 'swap_rejected'
+      await Promise.all([
+        sendPushNotification({
+          profileIds: [request.requesterId],
+          title: decision === 'accepted' ? 'Richiesta accettata' : 'Richiesta rifiutata',
+          body: `${user.name} ha ${decision === 'accepted' ? 'accettato' : 'rifiutato'} la tua richiesta di cambio turno`,
+          url: '/requests',
+        }),
+        sendEmailNotification({
+          type: emailType,
+          requesterId: request.requesterId,
+          targetId: user.id,
+          workDate: request.workDate ?? '',
+        }),
+      ])
     }
 
     await reloadRequests()
