@@ -219,19 +219,23 @@ export function RequestsProvider({ children }) {
     setLoading(false)
   }
 
-  const createSwapRequest = async ({ shiftId, targetEmployeeId }) => {
+  const createSwapRequest = async ({ shiftId, targetEmployeeIds }) => {
     if (!user || !isSupabaseConfigured || !supabase) return
 
     setError('')
-    const { error: rpcError } = await supabase.rpc('create_swap_request', {
-      p_shift_id: shiftId,
-      p_requester_id: user.id,
-      p_target_employee_id: targetEmployeeId,
-    })
 
-    if (rpcError) {
-      setError(rpcError.message)
-      throw rpcError
+    // Send a separate swap request for each target
+    for (const targetEmployeeId of targetEmployeeIds) {
+      const { error: rpcError } = await supabase.rpc('create_swap_request', {
+        p_shift_id: shiftId,
+        p_requester_id: user.id,
+        p_target_employee_id: targetEmployeeId,
+      })
+
+      if (rpcError) {
+        setError(rpcError.message)
+        throw rpcError
+      }
     }
 
     // Carica work_date della shift per includerla nell'email
@@ -241,19 +245,23 @@ export function RequestsProvider({ children }) {
       .eq('id', shiftId)
       .maybeSingle()
 
+    const workDate = shiftRow?.work_date ?? ''
+
     await Promise.all([
       sendPushNotification({
-        profileIds: [targetEmployeeId],
+        profileIds: targetEmployeeIds,
         title: 'Nuova richiesta cambio turno',
         body: `${user.name} ti ha inviato una richiesta di cambio turno`,
         url: '/requests',
       }),
-      sendEmailNotification({
-        type: 'swap_new',
-        requesterId: user.id,
-        targetId: targetEmployeeId,
-        workDate: shiftRow?.work_date ?? '',
-      }),
+      ...targetEmployeeIds.map(targetId =>
+        sendEmailNotification({
+          type: 'swap_new',
+          requesterId: user.id,
+          targetId,
+          workDate,
+        })
+      ),
     ])
 
     await reloadRequests()

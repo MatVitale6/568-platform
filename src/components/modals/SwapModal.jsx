@@ -6,7 +6,7 @@ const DAYS_FULL = ['Domenica', 'Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 
 const MONTHS_SHORT = ['gen', 'feb', 'mar', 'apr', 'mag', 'giu', 'lug', 'ago', 'set', 'ott', 'nov', 'dic']
 
 export default function SwapModal({ date, shift, employees, currentUser, onClose, onSubmit, submitError }) {
-  const [selectedColleague, setSelectedColleague] = useState(null)
+  const [selectedColleagues, setSelectedColleagues] = useState(new Set())
   const [sent, setSent] = useState(false)
   const [submitting, setSubmitting] = useState(false)
 
@@ -21,13 +21,22 @@ export default function SwapModal({ date, shift, employees, currentUser, onClose
   const dayLabel = `${DAYS_FULL[date.getDay()]} ${date.getDate()} ${MONTHS_SHORT[date.getMonth()]}`
   const formattedDate = `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`
 
+  const toggleColleague = (id) => {
+    setSelectedColleagues(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
   const handleSend = async () => {
     setSubmitting(true)
     try {
       await onSubmit({
         date,
         shiftId: shift?.id,
-        targetEmployeeId: selectedColleague,
+        targetEmployeeIds: [...selectedColleagues],
         shiftType: myShift?.partial ? 'Parziale' : 'Completo',
         formattedDate,
       })
@@ -53,7 +62,10 @@ export default function SwapModal({ date, shift, employees, currentUser, onClose
             </div>
             <p className="font-semibold text-slate-800 text-base">Richiesta inviata!</p>
             <p className="text-sm text-slate-500 mt-1">
-              {employees.find(e => e.id === selectedColleague)?.name} riceverà una notifica.
+              {selectedColleagues.size === 1
+                ? `${employees.find(e => selectedColleagues.has(e.id))?.name} riceverà una notifica.`
+                : `${selectedColleagues.size} colleghi riceveranno una notifica.`
+              }
             </p>
           </div>
         ) : (
@@ -72,7 +84,7 @@ export default function SwapModal({ date, shift, employees, currentUser, onClose
 
             {/* Lista colleghi disponibili */}
             <p className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider px-1 pt-1">
-              Scegli un collega
+              Scegli uno o più colleghi
             </p>
             {availableColleagues.length === 0 ? (
               <p className="text-slate-400 text-sm text-center py-6">
@@ -80,11 +92,11 @@ export default function SwapModal({ date, shift, employees, currentUser, onClose
               </p>
             ) : (
               availableColleagues.map(emp => {
-                const isSelected = selectedColleague === emp.id
+                const isSelected = selectedColleagues.has(emp.id)
                 return (
                   <div
                     key={emp.id}
-                    onClick={() => setSelectedColleague(emp.id)}
+                    onClick={() => toggleColleague(emp.id)}
                     className="flex items-center gap-3 px-4 py-3 rounded-xl border-2 cursor-pointer transition"
                     style={isSelected
                       ? { borderColor: emp.color + '60', backgroundColor: emp.color + '12' }
@@ -93,11 +105,19 @@ export default function SwapModal({ date, shift, employees, currentUser, onClose
                   >
                     <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: emp.color }} />
                     <span className="text-sm font-medium text-slate-700">{emp.name}</span>
-                    {isSelected && (
-                      <svg className="w-4 h-4 ml-auto" style={{ color: emp.color }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                      </svg>
-                    )}
+                    <div
+                      className="w-5 h-5 ml-auto rounded flex items-center justify-center shrink-0 border-2 transition"
+                      style={isSelected
+                        ? { backgroundColor: emp.color, borderColor: emp.color }
+                        : { backgroundColor: 'white', borderColor: '#cbd5e1' }
+                      }
+                    >
+                      {isSelected && (
+                        <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                        </svg>
+                      )}
+                    </div>
                   </div>
                 )
               })
@@ -121,7 +141,7 @@ export default function SwapModal({ date, shift, employees, currentUser, onClose
               <Button variant="outline" onClick={onClose} className="flex-1 rounded-xl py-3 text-sm">Annulla</Button>
               <Button
                 onClick={handleSend}
-                disabled={!selectedColleague || submitting}
+                disabled={selectedColleagues.size === 0 || submitting}
                 className="flex-1 rounded-xl py-3 text-sm bg-indigo-500 hover:bg-indigo-400 text-white disabled:opacity-70"
               >
                 {submitting ? 'Invio...' : 'Conferma'}
