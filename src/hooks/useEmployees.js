@@ -203,10 +203,9 @@ export function useEmployees() {
     }
 
     setError('')
-    const { error: inviteError } = await supabase
-      .from('employees')
-      .update({ invited: true })
-      .eq('profile_id', id)
+    const { error: inviteError } = await supabase.functions.invoke('send-invite', {
+      body: { profileId: id },
+    })
 
     if (inviteError) {
       setError(inviteError.message)

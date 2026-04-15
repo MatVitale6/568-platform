@@ -146,6 +146,14 @@ export function AuthProvider({ children }) {
 
   const login = (userData) => setUser(mapMockUser(userData))
 
+  const refreshProfile = async () => {
+    if (!isSupabaseConfigured || !supabase) return
+    const { data } = await supabase.auth.getSession()
+    if (!data.session?.user) return
+    const profile = await getProfileForUser(data.session.user.id)
+    setUser(mapSupabaseUser(data.session.user, profile))
+  }
+
   const loginWithPassword = async (email, password) => {
     if (!isSupabaseConfigured || !supabase) {
       throw new Error('Supabase non configurato')
@@ -171,7 +179,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, loginWithPassword, logout, isMockMode: !isSupabaseConfigured }}>
+    <AuthContext.Provider value={{ user, loading, login, loginWithPassword, logout, refreshProfile, isMockMode: !isSupabaseConfigured }}>
       {children}
     </AuthContext.Provider>
   )

@@ -6,11 +6,14 @@ import Calendar from '@/pages/Calendar'
 import Employees from '@/pages/Employees'
 import Requests from '@/pages/Requests'
 import Layout from '@/components/Layout'
+import SetPassword from '@/pages/SetPassword'
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth()
   if (loading) return <ScreenLoader />
-  return user ? children : <Navigate to="/login" replace />
+  if (!user) return <Navigate to="/login" replace />
+  if (!user.firstLoginCompleted) return <Navigate to="/set-password" replace />
+  return children
 }
 
 function AdminRoute({ children }) {
@@ -28,6 +31,16 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/login" element={user ? <Navigate to="/calendar" replace /> : <Login />} />
+      <Route
+        path="/set-password"
+        element={
+          !user
+            ? <Navigate to="/login" replace />
+            : user.firstLoginCompleted
+              ? <Navigate to="/calendar" replace />
+              : <SetPassword />
+        }
+      />
       <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
         <Route index element={<Navigate to="/calendar" replace />} />
         <Route path="calendar" element={<Calendar />} />

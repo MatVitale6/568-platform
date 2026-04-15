@@ -227,7 +227,9 @@ verify_jwt = false
 
 [functions.weekly-digest]
 verify_jwt = false
-# enabled = true
+
+[functions.send-invite]
+verify_jwt = false
 # host = "smtp.sendgrid.net"
 # port = 587
 # user = "apikey"
