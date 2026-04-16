@@ -28,21 +28,22 @@ export default function SetPassword() {
 		setError('');
 
 		try {
-			// Aggiorna la password
-			const { error: updateError } = await supabase.auth.updateUser({ password });
-			if (updateError) throw updateError;
-
-			// Segna first_login_completed = true e collega auth_user_id se mancante
+			// Ottieni la sessione prima di tutto
 			const { data: sessionData } = await supabase.auth.getSession();
 			const authUserId = sessionData?.session?.user?.id;
 
+			// Segna first_login_completed = true NEL DB PRIMA di updateUser,
+			// così quando onAuthStateChange rilegge il profilo trova già il valore corretto
 			if (authUserId) {
-				// Collega auth_user_id al profilo (se non già collegato)
 				await supabase
 					.from('profiles')
-					.update({ first_login_completed: true, auth_user_id: authUserId })
+					.update({ first_login_completed: true })
 					.eq('auth_user_id', authUserId);
 			}
+
+			// Aggiorna la password (triggera onAuthStateChange — ora il DB è già aggiornato)
+			const { error: updateError } = await supabase.auth.updateUser({ password });
+			if (updateError) throw updateError;
 
 			// Ricarica il profilo nel context e vai al calendario
 			await refreshProfile();
