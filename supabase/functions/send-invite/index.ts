@@ -79,21 +79,22 @@ Deno.serve(async (request) => {
     )
 
     if (inviteError) {
-      // Se l'utente esiste già in auth.users, genera un recovery link invece
-      if (inviteError.message?.includes('already been registered')) {
-        const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
+      // Se l'utente esiste già in auth.users, genera un magic link di reset password
+      if (
+        inviteError.message?.includes('already been registered') ||
+        inviteError.message?.includes('already registered')
+      ) {
+        const { data: _linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
           type: 'recovery',
           email: profile.email,
           options: { redirectTo: `${appUrl}/set-password` },
         })
 
         if (linkError) {
-          return Response.json({ error: `Errore generazione link: ${linkError.message}` }, { status: 500, headers: corsHeaders })
+          return Response.json({ error: `Utente già registrato e impossibile generare nuovo link: ${linkError.message}` }, { status: 500, headers: corsHeaders })
         }
 
-        // Segna come invitato nel DB
         await supabaseAdmin.from('employees').update({ invited: true }).eq('profile_id', profileId)
-
         return Response.json({ ok: true, action: 'recovery_link_sent', email: profile.email }, { headers: corsHeaders })
       }
 
