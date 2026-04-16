@@ -1,4 +1,7 @@
 {
+  "buildCommand": "cd frontend && npm run build",
+  "outputDirectory": "frontend/dist",
+  "installCommand": "cd frontend && npm install",
   "headers": [
     {
       "source": "/",
@@ -38,6 +41,15 @@
     },
     {
       "source": "/login",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store, no-cache, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/set-password",
       "headers": [
         {
           "key": "Cache-Control",
