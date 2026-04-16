@@ -122,7 +122,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 						if (mounted) setUser(mapSupabaseUser(data.session.user, profile));
 						if (mounted) window.dispatchEvent(new Event('app:login'));
 					} catch {
-						if (mounted) setUser(mapSupabaseUser(data.session.user, null));
+						// Se il profilo non si carica, non azzerare firstLoginCompleted
+						if (mounted) setUser(prev => prev ?? mapSupabaseUser(data.session!.user, null));
 						if (mounted) window.dispatchEvent(new Event('app:login'));
 					}
 				}
@@ -149,13 +150,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 			try {
 				const profile = await getProfileForUser(session.user.id);
-				setUser(mapSupabaseUser(session.user, profile));
+				if (mounted) setUser(mapSupabaseUser(session.user, profile));
 				window.dispatchEvent(new Event('app:login'));
 			} catch {
-				setUser(mapSupabaseUser(session.user, null));
+				// Non resettare firstLoginCompleted se il profilo è già caricato
+				setUser(prev => prev ?? mapSupabaseUser(session.user, null));
 				window.dispatchEvent(new Event('app:login'));
 			}
-			setLoading(false);
+			if (mounted) setLoading(false);
 		});
 
 		return () => {
