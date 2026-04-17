@@ -1,5 +1,4 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.100.1'
-import nodemailer from 'npm:nodemailer@6.9.7'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -10,15 +9,7 @@ const corsHeaders = {
 const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? ''
 const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
 const appUrl = Deno.env.get('APP_URL') ?? 'https://568-platform.vercel.app'
-const outlookEmail = Deno.env.get('OUTLOOK_EMAIL') ?? ''
-const outlookPassword = Deno.env.get('OUTLOOK_PASSWORD') ?? ''
-
-const transporter = nodemailer.createTransport({
-  host: 'smtp.office365.com',
-  port: 587,
-  secure: false,
-  auth: { user: outlookEmail, pass: outlookPassword },
-})
+const resendApiKey = Deno.env.get('RESEND_API_KEY') ?? ''
 
 async function sendInviteEmail(to: string, name: string, link: string): Promise<void> {
   const html = `<!DOCTYPE html>
@@ -37,12 +28,21 @@ async function sendInviteEmail(to: string, name: string, link: string): Promise<
   </div>
 </body></html>`
 
-  await transporter.sendMail({
-    from: `Turni 568 <${outlookEmail}>`,
-    to,
-    subject: 'Sei stato invitato su Turni 568',
-    html,
+  const res = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${resendApiKey}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      from: 'Turni 568 <onboarding@resend.dev>',
+      to: [to],
+      subject: 'Sei stato invitato su Turni 568',
+      html,
+    }),
   })
+
+  if (!res.ok) {
+    const err = await res.text()
+    throw new Error(`Resend error: ${err}`)
+  }
 }
 
 // Admin client — service role, bypassa RLS

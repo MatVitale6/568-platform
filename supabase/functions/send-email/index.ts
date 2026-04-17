@@ -1,5 +1,4 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.100.1'
-import nodemailer from 'npm:nodemailer@6.9.7'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -9,38 +8,28 @@ const corsHeaders = {
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? ''
 const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-const outlookEmail = Deno.env.get('OUTLOOK_EMAIL') ?? ''
-const outlookPassword = Deno.env.get('OUTLOOK_PASSWORD') ?? ''
+const resendApiKey = Deno.env.get('RESEND_API_KEY') ?? ''
 const appUrl = Deno.env.get('APP_URL') ?? 'https://568-platform.vercel.app'
 
 const supabase = createClient(supabaseUrl, serviceRoleKey)
 
 // ────────────────────────────────────────────────
-//  Init Outlook SMTP transporter
+//  Helper: send email via Resend API
 // ────────────────────────────────────────────────
-const transporter = nodemailer.createTransport({
-  host: 'smtp.office365.com',
-  port: 587,
-  secure: false,
-  auth: {
-    user: outlookEmail,
-    pass: outlookPassword,
-  },
-})
-
-// ────────────────────────────────────────────────
-//  Helper: send one email via Outlook SMTP
-// ────────────────────────────────────────────────
-async function sendViaOutlook(to: string[], subject: string, html: string): Promise<void> {
-  try {
-    await transporter.sendMail({
-      from: outlookEmail,
-      to: to.join(', '),
+async function sendViaResend(to: string[], subject: string, html: string): Promise<void> {
+  const res = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${resendApiKey}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      from: 'Turni 568 <onboarding@resend.dev>',
+      to,
       subject,
       html,
-    })
-  } catch (error) {
-    throw new Error(`Outlook SMTP error: ${error.message}`)
+    }),
+  })
+  if (!res.ok) {
+    const err = await res.text()
+    throw new Error(`Resend error: ${err}`)
   }
 }
 
@@ -138,19 +127,19 @@ async function handleSwapNotification(body: {
   if (!requester || !target) throw new Error('Profili non trovati')
 
   if (type === 'swap_new') {
-    await sendViaOutlook(
+    await sendViaResend(
       [target.email],
       `${requester.full_name} ti ha chiesto un cambio turno`,
       swapNewTemplate(requester.full_name, target.full_name, workDate),
     )
   } else if (type === 'swap_accepted') {
-    await sendViaOutlook(
+    await sendViaResend(
       [requester.email],
       `${target.full_name} ha accettato il cambio turno`,
       swapAcceptedTemplate(requester.full_name, target.full_name, workDate),
     )
   } else if (type === 'swap_rejected') {
-    await sendViaOutlook(
+    await sendViaResend(
       [requester.email],
       `${target.full_name} ha rifiutato il cambio turno`,
       swapRejectedTemplate(requester.full_name, target.full_name, workDate),
@@ -170,8 +159,8 @@ Deno.serve(async (request) => {
     return new Response('Method not allowed', { status: 405, headers: corsHeaders })
   }
 
-  if (!outlookEmail || !outlookPassword) {
-    return Response.json({ error: 'OUTLOOK_EMAIL e OUTLOOK_PASSWORD non configurate' }, { status: 500, headers: corsHeaders })
+  if (!resendApiKey) {
+    return Response.json({ error: 'RESEND_API_KEY non configurata' }, { status: 500, headers: corsHeaders })
   }
 
   try {
