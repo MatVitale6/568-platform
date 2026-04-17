@@ -84,7 +84,7 @@ export default function Login() {
 			</form>
 
 			<div className="text-center mt-8 space-y-1">
-				<p className="text-slate-600 text-xs">Accesso riservato ai membri del team</p>
+				<p className="text-slate-400 text-xs">Accesso riservato ai membri del team</p>
 				{isMockMode && (
 					<p className="text-amber-400/80 text-[11px]">Modalita demo attiva: Supabase non ancora operativo lato dati</p>
 				)}

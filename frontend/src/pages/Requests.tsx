@@ -39,7 +39,7 @@ export default function Requests() {
 		<div className="flex flex-col">
 			<div className="bg-white border-b border-slate-200 px-4 py-3">
 				<p className="font-bold text-slate-800">Richieste cambio</p>
-				<p className="text-xs text-slate-400 mt-0.5">Storico e notifiche in-app</p>
+				<p className="text-xs text-slate-500 mt-0.5">Storico e notifiche in-app</p>
 			</div>
 
 			<div className="bg-white px-4 py-4 border-b border-slate-100">
@@ -91,7 +91,7 @@ export default function Requests() {
 						</div>
 					)}
 
-					<p className="text-xs text-slate-400">
+					<p className="text-xs text-slate-500">
 						Stato browser: {push.permission}. {isWebPushConfigured ? 'VAPID configurato.' : 'VAPID non configurato.'}
 					</p>
 				</div>
@@ -106,7 +106,7 @@ export default function Requests() {
 			{loading && (
 				<div className="flex flex-col items-center text-center py-16 px-8 bg-white">
 					<div className="w-8 h-8 rounded-full border-2 border-slate-200 border-t-indigo-500 animate-spin mb-4" />
-					<p className="text-slate-400 text-sm">Caricamento richieste...</p>
+					<p className="text-slate-500 text-sm">Caricamento richieste...</p>
 				</div>
 			)}
 
@@ -117,7 +117,7 @@ export default function Requests() {
 							<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-4 4v-4z" />
 						</svg>
 					</div>
-					<p className="text-slate-400 text-sm">Nessuna richiesta presente</p>
+					<p className="text-slate-500 text-sm">Nessuna richiesta presente</p>
 				</div>
 			)}
 
@@ -142,10 +142,10 @@ export default function Requests() {
 								</div>
 
 								<div className="rounded-xl bg-slate-50 px-3 py-3 text-sm text-slate-600 space-y-1">
-									<p><span className="text-slate-400">Richiedente:</span> {request.requester?.name}</p>
-									<p><span className="text-slate-400">Collega:</span> {request.target?.name}</p>
-									<p><span className="text-slate-400">Creata il:</span> {new Date(request.createdAt).toLocaleString('it-IT')}</p>
-									{request.respondedAt && <p><span className="text-slate-400">Risposta il:</span> {new Date(request.respondedAt).toLocaleString('it-IT')}</p>}
+						<p><span className="text-slate-500">Richiedente:</span> {request.requester?.name}</p>
+						<p><span className="text-slate-500">Collega:</span> {request.target?.name}</p>
+						<p><span className="text-slate-500">Creata il:</span> {new Date(request.createdAt).toLocaleString('it-IT')}</p>
+						{request.respondedAt && <p><span className="text-slate-500">Risposta il:</span> {new Date(request.respondedAt).toLocaleString('it-IT')}</p>}
 								</div>
 
 								{canRespond && (
@@ -168,7 +168,7 @@ export default function Requests() {
 								)}
 
 								{!canRespond && request.status === 'pending' && (
-									<p className="text-xs text-slate-400">
+									<p className="text-xs text-slate-500 italic">
 										{isIncoming ? 'In attesa della tua risposta' : 'In attesa della risposta del collega'}
 									</p>
 								)}

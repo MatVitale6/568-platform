@@ -38,7 +38,7 @@ export default function DayRow({ date, shift, employees, onPress, currentUser, h
 		>
 			{/* Etichetta giorno */}
 			<div className={`w-14 flex flex-col items-center justify-center py-3 shrink-0 ${isClosed ? 'opacity-40' : ''}`}>
-				<span className={`text-[11px] font-semibold uppercase tracking-wider ${isToday ? 'text-indigo-500' : 'text-slate-400'}`}>
+				<span className={`text-[11px] font-semibold uppercase tracking-wider ${isToday ? 'text-indigo-500' : 'text-slate-500'}`}>
 					{dayName}
 				</span>
 				<span className={`text-2xl font-bold leading-tight mt-0.5 ${isToday ? 'text-indigo-600' : 'text-slate-700'}`}>
@@ -61,9 +61,9 @@ export default function DayRow({ date, shift, employees, onPress, currentUser, h
 					<span className="text-slate-400 text-sm font-medium">Chiuso</span>
 				) : !hasEmployees ? (
 					currentUser?.role === 'admin' ? (
-						<span className="text-slate-300 text-sm">+ Crea turno</span>
+						<span className="text-slate-500 text-sm">+ Crea turno</span>
 					) : (
-						<span className="text-slate-300 text-sm italic">Nessun turno</span>
+						<span className="text-slate-500 text-sm italic">Nessun turno</span>
 					)
 				) : (
 					shift.employees.map((shiftEmp) => {

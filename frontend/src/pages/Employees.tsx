@@ -8,6 +8,15 @@ function Spinner() {
 	return <span className="inline-block w-3.5 h-3.5 rounded-full border-2 border-current border-t-transparent animate-spin" />;
 }
 
+function getAvatarTextColor(hex: string): string {
+	const r = parseInt(hex.slice(1, 3), 16);
+	const g = parseInt(hex.slice(3, 5), 16);
+	const b = parseInt(hex.slice(5, 7), 16);
+	const toLinear = (c: number) => { const s = c / 255; return s <= 0.04045 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4); };
+	const L = 0.2126 * toLinear(r) + 0.7152 * toLinear(g) + 0.0722 * toLinear(b);
+	return L > 0.179 ? '#1e293b' : '#ffffff';
+}
+
 export default function Employees() {
 	const { employees, loading, error, addEmployee, updateEmployee, deleteEmployee, sendInvite } = useEmployees();
 	const [sheet, setSheet] = useState<'create' | EmployeeDetail | null>(null);
@@ -65,7 +74,7 @@ export default function Employees() {
 			<div className="bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between">
 				<div>
 					<p className="font-bold text-slate-800">Dipendenti</p>
-					<p className="text-xs text-slate-400 mt-0.5">{employees.length} in anagrafica</p>
+					<p className="text-xs text-slate-500 mt-0.5">{employees.length} in anagrafica</p>
 				</div>
 				<button
 					onClick={() => setSheet('create')}
@@ -89,19 +98,19 @@ export default function Employees() {
 				{loading && (
 					<div className="flex flex-col items-center text-center py-16 px-8 bg-white">
 						<div className="w-8 h-8 rounded-full border-2 border-slate-200 border-t-indigo-500 animate-spin mb-4" />
-						<p className="text-slate-400 text-sm">Caricamento dipendenti...</p>
+						<p className="text-slate-500 text-sm">Caricamento dipendenti...</p>
 					</div>
 				)}
 
 				{!loading && employees.length === 0 && (
 					<div className="flex flex-col items-center text-center py-16 px-8">
 						<div className="w-14 h-14 bg-slate-100 rounded-full flex items-center justify-center mb-4">
-							<svg className="w-7 h-7 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-							</svg>
-						</div>
-						<p className="text-slate-400 text-sm">Nessun dipendente in anagrafica</p>
-						<p className="text-slate-300 text-xs mt-1">Usa &quot;Crea profilo&quot; per aggiungerne uno</p>
+						<svg className="w-7 h-7 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+						</svg>
+					</div>
+					<p className="text-slate-500 text-sm">Nessun dipendente in anagrafica</p>
+					<p className="text-slate-500 text-xs mt-1">Usa &quot;Crea profilo&quot; per aggiungerne uno</p>
 					</div>
 				)}
 
@@ -117,7 +126,7 @@ export default function Employees() {
 							</div>
 							<div className="flex-1 min-w-0">
 								<p className="font-semibold text-slate-800 truncate">{emp.name}</p>
-								<p className="text-xs text-slate-400 truncate">{emp.email}</p>
+								<p className="text-xs text-slate-500 truncate">{emp.email}</p>
 							</div>
 							{/* Badge invito */}
 							{emp.invited ? (
@@ -167,7 +176,7 @@ export default function Employees() {
 							</button>
 							<button
 								onClick={() => setToDelete(emp)}
-								className="w-10 flex items-center justify-center text-red-400 bg-red-50 hover:bg-red-100 rounded-xl transition"
+							className="w-10 flex items-center justify-center text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition"
 							>
 								<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -204,7 +213,7 @@ export default function Employees() {
 function Detail({ icon, label, warn = false }: { icon: string; label: string; warn?: boolean }) {
 	return (
 		<div className="flex items-center gap-2">
-			<svg className={`w-3.5 h-3.5 shrink-0 ${warn ? 'text-amber-400' : 'text-slate-300'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+			<svg className={`w-3.5 h-3.5 shrink-0 ${warn ? 'text-amber-500' : 'text-slate-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
 				{icon === 'phone' ? (
 					<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
 				) : (
