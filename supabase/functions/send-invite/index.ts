@@ -1,4 +1,5 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.100.1'
+import nodemailer from 'npm:nodemailer@6.9.7'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -9,6 +10,40 @@ const corsHeaders = {
 const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? ''
 const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
 const appUrl = Deno.env.get('APP_URL') ?? 'https://568-platform.vercel.app'
+const outlookEmail = Deno.env.get('OUTLOOK_EMAIL') ?? ''
+const outlookPassword = Deno.env.get('OUTLOOK_PASSWORD') ?? ''
+
+const transporter = nodemailer.createTransport({
+  host: 'smtp.office365.com',
+  port: 587,
+  secure: false,
+  auth: { user: outlookEmail, pass: outlookPassword },
+})
+
+async function sendInviteEmail(to: string, name: string, link: string): Promise<void> {
+  const html = `<!DOCTYPE html>
+<html lang="it"><head><meta charset="UTF-8"/></head>
+<body style="margin:0;padding:0;background:#f1f5f9;font-family:'Segoe UI',Arial,sans-serif;color:#1e293b;">
+  <div style="max-width:520px;margin:32px auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.08);">
+    <div style="background:#0f172a;padding:24px 32px;">
+      <h1 style="margin:0;font-size:18px;color:#f1f5f9;font-weight:700;">Turni 568</h1>
+    </div>
+    <div style="padding:32px;">
+      <p style="margin:0 0 16px;">Ciao <strong>${name}</strong>,</p>
+      <p style="margin:0 0 24px;">Sei stato invitato ad accedere all'app <strong>Turni 568</strong>. Clicca il bottone qui sotto per impostare la tua password e accedere.</p>
+      <a href="${link}" style="display:inline-block;background:#6366f1;color:#fff;text-decoration:none;padding:12px 28px;border-radius:8px;font-weight:600;font-size:15px;">Imposta password</a>
+      <p style="margin:24px 0 0;font-size:12px;color:#94a3b8;">Il link scade tra 24 ore. Se non hai richiesto questo invito, ignora questa email.</p>
+    </div>
+  </div>
+</body></html>`
+
+  await transporter.sendMail({
+    from: `Turni 568 <${outlookEmail}>`,
+    to,
+    subject: 'Sei stato invitato su Turni 568',
+    html,
+  })
+}
 
 // Admin client — service role, bypassa RLS
 const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
@@ -66,7 +101,7 @@ Deno.serve(async (request) => {
     }
 
     // Invia invito via Supabase Auth Admin API
-    // Se l'utente esiste già, re-invia il link (utile per reinvii)
+    // Se l'utente esiste già, genera un recovery link e lo mandiamo noi via Outlook
     const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(
       profile.email,
       {
@@ -79,21 +114,27 @@ Deno.serve(async (request) => {
     )
 
     if (inviteError) {
-      // Se l'utente esiste già in auth.users, genera un magic link di reset password
+      // Se l'utente esiste già in auth.users, genera un magic link e lo spediamo via Outlook
       if (
         inviteError.message?.includes('already been registered') ||
         inviteError.message?.includes('already registered')
       ) {
-        const { data: _linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
+        const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
           type: 'recovery',
           email: profile.email,
           options: { redirectTo: `${appUrl}/set-password` },
         })
 
         if (linkError) {
-          return Response.json({ error: `Utente già registrato e impossibile generare nuovo link: ${linkError.message}` }, { status: 500, headers: corsHeaders })
+          return Response.json({ error: `Impossibile generare link: ${linkError.message}` }, { status: 500, headers: corsHeaders })
         }
 
+        const link = linkData?.properties?.action_link
+        if (!link) {
+          return Response.json({ error: 'Link generato non valido' }, { status: 500, headers: corsHeaders })
+        }
+
+        await sendInviteEmail(profile.email, profile.full_name, link)
         await supabaseAdmin.from('employees').update({ invited: true }).eq('profile_id', profileId)
         return Response.json({ ok: true, action: 'recovery_link_sent', email: profile.email }, { headers: corsHeaders })
       }
@@ -101,7 +142,14 @@ Deno.serve(async (request) => {
       return Response.json({ error: `Errore invito: ${inviteError.message}` }, { status: 500, headers: corsHeaders })
     }
 
-    // Collega auth_user_id al profilo (Supabase crea l'utente auth al momento dell'invito)
+    // Utente nuovo: Supabase invia la sua email di default — ma usiamo anche noi Outlook
+    // per avere controllo su deliverability e template
+    const inviteLink = inviteData?.properties?.action_link
+    if (inviteLink) {
+      await sendInviteEmail(profile.email, profile.full_name, inviteLink)
+    }
+
+    // Collega auth_user_id al profilo
     if (inviteData?.user?.id) {
       await supabaseAdmin
         .from('profiles')
