@@ -216,13 +216,23 @@ export function useEmployees() {
 		}
 
 		setError('');
-		const { error: inviteError } = await supabase.functions.invoke('send-invite', {
+		const { data: invokeData, error: inviteError } = await supabase.functions.invoke('send-invite', {
 			body: { profileId: id },
 		});
 
+		console.log('[sendInvite] response:', { invokeData, inviteError });
+
 		if (inviteError) {
-			setError(inviteError.message);
-			throw inviteError;
+			const msg = inviteError.message || JSON.stringify(inviteError);
+			setError(`Errore invito: ${msg}`);
+			throw new Error(msg);
+		}
+
+		// La funzione può rispondere con { error: '...' } anche con status 200
+		if (invokeData?.error) {
+			const msg = invokeData.error as string;
+			setError(`Errore invito: ${msg}`);
+			throw new Error(msg);
 		}
 
 		await reloadEmployees();
