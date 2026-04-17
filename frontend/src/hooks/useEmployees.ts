@@ -220,10 +220,23 @@ export function useEmployees() {
 			body: { profileId: id },
 		});
 
-		console.log('[sendInvite] response:', { invokeData, inviteError });
+		// Estrai il messaggio reale dal corpo della risposta HTTP se disponibile
+		let errMsg: string | null = null;
+		if (inviteError) {
+			try {
+				// FunctionsHttpError ha un context che è la Response originale
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
+				const body = await (inviteError as any).context?.json?.();
+				errMsg = body?.error ?? inviteError.message;
+			} catch {
+				errMsg = inviteError.message;
+			}
+		}
+
+		console.log('[sendInvite] response:', { invokeData, inviteError, errMsg });
 
 		if (inviteError) {
-			const msg = inviteError.message || JSON.stringify(inviteError);
+			const msg = errMsg ?? 'Errore sconosciuto';
 			setError(`Errore invito: ${msg}`);
 			throw new Error(msg);
 		}
