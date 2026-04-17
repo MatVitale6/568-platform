@@ -153,21 +153,16 @@ export default function Requests() {
 										<button
 											onClick={() => handleDecision(request.id, 'rejected')}
 											disabled={busyId === request.id}
-											className="flex-1 rounded-xl border border-red-200 bg-red-50 py-3 text-sm font-semibold text-red-600 hover:bg-red-100 disabled:opacity-70"
-										>
-											{busyId === request.id ? 'Aggiornamento...' : 'Rifiuta'}
-										</button>
-										<button
-											onClick={() => handleDecision(request.id, 'accepted')}
-											disabled={busyId === request.id}
-											className="flex-1 rounded-xl border border-green-200 bg-green-50 py-3 text-sm font-semibold text-green-700 hover:bg-green-100 disabled:opacity-70"
-										>
-											{busyId === request.id ? 'Aggiornamento...' : 'Accetta'}
-										</button>
-									</div>
-								)}
-
-								{!canRespond && request.status === 'pending' && (
+									className="flex-1 flex items-center justify-center gap-2 rounded-xl border border-red-200 bg-red-50 py-3 text-sm font-semibold text-red-600 hover:bg-red-100 disabled:opacity-70"
+								>
+									{busyId === request.id ? <><span className="inline-block w-4 h-4 rounded-full border-2 border-red-400 border-t-transparent animate-spin" /> Aggiornamento...</> : 'Rifiuta'}
+								</button>
+								<button
+									onClick={() => handleDecision(request.id, 'accepted')}
+									disabled={busyId === request.id}
+									className="flex-1 flex items-center justify-center gap-2 rounded-xl border border-green-200 bg-green-50 py-3 text-sm font-semibold text-green-700 hover:bg-green-100 disabled:opacity-70"
+								>
+									{busyId === request.id ? <><span className="inline-block w-4 h-4 rounded-full border-2 border-green-500 border-t-transparent animate-spin" /> Aggiornamento...</> : 'Accetta'}
 									<p className="text-xs text-slate-400">
 										{isIncoming ? 'In attesa della tua risposta' : 'In attesa della risposta del collega'}
 									</p>

@@ -142,8 +142,10 @@ export default function EmployeeSheet({ employee, onSave, onClose, saveError }: 
 
 				<SheetFooter className="mt-6 flex gap-2">
 					<Button variant="outline" onClick={onClose} disabled={submitting} className="flex-1 rounded-xl py-3 text-sm">Annulla</Button>
-					<Button onClick={handleSave} disabled={submitting} className="flex-1 rounded-xl py-3 text-sm bg-indigo-500 hover:bg-indigo-400 text-white disabled:opacity-70">
-						{submitting ? 'Salvataggio...' : 'Salva dati'}
+					<Button onClick={handleSave} disabled={submitting} className="flex-1 rounded-xl py-3 text-sm bg-indigo-500 hover:bg-indigo-400 text-white disabled:opacity-70 flex items-center justify-center gap-2">
+						{submitting ? (
+							<><span className="inline-block w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" /> Salvataggio...</>
+						) : 'Salva dati'}
 					</Button>
 				</SheetFooter>
 			</SheetContent>

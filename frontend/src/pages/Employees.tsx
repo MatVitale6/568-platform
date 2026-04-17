@@ -4,11 +4,17 @@ import EmployeeSheet from '@/components/employees/EmployeeSheet';
 import DeleteConfirmDialog from '@/components/employees/DeleteConfirmDialog';
 import type { EmployeeDetail } from '@/types';
 
+function Spinner() {
+	return <span className="inline-block w-3.5 h-3.5 rounded-full border-2 border-current border-t-transparent animate-spin" />;
+}
+
 export default function Employees() {
 	const { employees, loading, error, addEmployee, updateEmployee, deleteEmployee, sendInvite } = useEmployees();
 	const [sheet, setSheet] = useState<'create' | EmployeeDetail | null>(null);
 	const [toDelete, setToDelete] = useState<EmployeeDetail | null>(null);
 	const [inviteSent, setInviteSent] = useState<string | null>(null);
+	const [inviting, setInviting] = useState<string | null>(null);
+	const [deleting, setDeleting] = useState(false);
 	const [actionError, setActionError] = useState('');
 
 	const handleSave = async (data: { name: string; fiscalCode: string; email: string; phone: string; contractEnd: string }) => {
@@ -28,22 +34,28 @@ export default function Employees() {
 
 	const handleDelete = async () => {
 		setActionError('');
+		setDeleting(true);
 		try {
 			await deleteEmployee(toDelete!.id);
 			setToDelete(null);
 		} catch (deleteError) {
 			setActionError((deleteError as Error).message || 'Eliminazione non riuscita');
+		} finally {
+			setDeleting(false);
 		}
 	};
 
 	const handleInvite = async (emp: EmployeeDetail) => {
 		setActionError('');
+		setInviting(emp.id);
 		try {
 			await sendInvite(emp.id);
 			setInviteSent(emp.id);
 			setTimeout(() => setInviteSent(null), 3000);
 		} catch (inviteError) {
 			setActionError((inviteError as Error).message || 'Invito non riuscito');
+		} finally {
+			setInviting(null);
 		}
 	};
 
@@ -132,10 +144,13 @@ export default function Employees() {
 							{!emp.invited && (
 								<button
 									onClick={() => handleInvite(emp)}
-									className="flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 py-2 rounded-xl transition"
+									disabled={inviting === emp.id}
+									className="flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 py-2 rounded-xl transition disabled:opacity-70"
 								>
 									{inviteSent === emp.id ? (
 										<><svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg> Inviato!</>
+									) : inviting === emp.id ? (
+										<><Spinner /> Invio...</>
 									) : (
 										<><svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg> Invia invito</>
 									)}
@@ -177,6 +192,7 @@ export default function Employees() {
 			{toDelete && (
 				<DeleteConfirmDialog
 					employee={toDelete}
+					deleting={deleting}
 					onConfirm={handleDelete}
 					onClose={() => setToDelete(null)}
 				/>

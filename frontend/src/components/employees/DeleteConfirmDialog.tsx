@@ -4,11 +4,12 @@ import type { EmployeeDetail } from '@/types';
 
 interface DeleteConfirmDialogProps {
 	employee: EmployeeDetail
+	deleting?: boolean
 	onConfirm: () => void
 	onClose: () => void
 }
 
-export default function DeleteConfirmDialog({ employee, onConfirm, onClose }: DeleteConfirmDialogProps) {
+export default function DeleteConfirmDialog({ employee, deleting, onConfirm, onClose }: DeleteConfirmDialogProps) {
 	return (
 		<Dialog open onOpenChange={onClose}>
 			<DialogContent className="max-w-sm w-[92vw] rounded-2xl p-0 overflow-hidden gap-0">
@@ -24,9 +25,11 @@ export default function DeleteConfirmDialog({ employee, onConfirm, onClose }: De
 					</p>
 				</div>
 				<DialogFooter className="px-5 pb-5 flex gap-2">
-					<Button variant="outline" onClick={onClose} className="flex-1 rounded-xl py-3 text-sm">Annulla</Button>
-					<Button onClick={onConfirm} className="flex-1 rounded-xl py-3 text-sm bg-red-500 hover:bg-red-400 text-white">
-						Elimina
+					<Button variant="outline" onClick={onClose} disabled={deleting} className="flex-1 rounded-xl py-3 text-sm">Annulla</Button>
+					<Button onClick={onConfirm} disabled={deleting} className="flex-1 rounded-xl py-3 text-sm bg-red-500 hover:bg-red-400 text-white flex items-center justify-center gap-2">
+						{deleting ? (
+							<><span className="inline-block w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" /> Eliminazione...</>
+						) : 'Elimina'}
 					</Button>
 				</DialogFooter>
 			</DialogContent>
