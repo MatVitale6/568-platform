@@ -100,60 +100,59 @@ Deno.serve(async (request) => {
       return Response.json({ error: 'Profilo non trovato' }, { status: 404, headers: corsHeaders })
     }
 
-    // Invia invito via Supabase Auth Admin API
-    // Se l'utente esiste già, genera un recovery link e lo mandiamo noi via Outlook
-    const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(
-      profile.email,
-      {
+    // Genera il link di invito (crea l'utente auth se non esiste)
+    const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
+      type: 'invite',
+      email: profile.email,
+      options: {
         redirectTo: `${appUrl}/set-password`,
-        data: {
-          full_name: profile.full_name,
-          profile_id: profile.id,
-        },
+        data: { full_name: profile.full_name, profile_id: profile.id },
       },
-    )
+    })
 
-    if (inviteError) {
-      // Se l'utente esiste già in auth.users, genera un magic link e lo spediamo via Outlook
+    if (linkError) {
+      // Se l'utente esiste già, genera un recovery link
       if (
-        inviteError.message?.includes('already been registered') ||
-        inviteError.message?.includes('already registered')
+        linkError.message?.includes('already been registered') ||
+        linkError.message?.includes('already registered') ||
+        linkError.message?.includes('already exists')
       ) {
-        const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
+        const { data: recoveryData, error: recoveryError } = await supabaseAdmin.auth.admin.generateLink({
           type: 'recovery',
           email: profile.email,
           options: { redirectTo: `${appUrl}/set-password` },
         })
 
-        if (linkError) {
-          return Response.json({ error: `Impossibile generare link: ${linkError.message}` }, { status: 500, headers: corsHeaders })
+        if (recoveryError) {
+          return Response.json({ error: `Impossibile generare link: ${recoveryError.message}` }, { status: 500, headers: corsHeaders })
         }
 
-        const link = linkData?.properties?.action_link
-        if (!link) {
-          return Response.json({ error: 'Link generato non valido' }, { status: 500, headers: corsHeaders })
+        const recoveryLink = recoveryData?.properties?.action_link
+        if (!recoveryLink) {
+          return Response.json({ error: 'Link recovery non valido' }, { status: 500, headers: corsHeaders })
         }
 
-        await sendInviteEmail(profile.email, profile.full_name, link)
+        await sendInviteEmail(profile.email, profile.full_name, recoveryLink)
         await supabaseAdmin.from('employees').update({ invited: true }).eq('profile_id', profileId)
         return Response.json({ ok: true, action: 'recovery_link_sent', email: profile.email }, { headers: corsHeaders })
       }
 
-      return Response.json({ error: `Errore invito: ${inviteError.message}` }, { status: 500, headers: corsHeaders })
+      return Response.json({ error: `Errore generazione link: ${linkError.message}` }, { status: 500, headers: corsHeaders })
     }
 
-    // Utente nuovo: Supabase invia la sua email di default — ma usiamo anche noi Outlook
-    // per avere controllo su deliverability e template
-    const inviteLink = inviteData?.properties?.action_link
-    if (inviteLink) {
-      await sendInviteEmail(profile.email, profile.full_name, inviteLink)
+    const inviteLink = linkData?.properties?.action_link
+    if (!inviteLink) {
+      return Response.json({ error: 'Link invito non valido' }, { status: 500, headers: corsHeaders })
     }
+
+    // Invia email via Outlook SMTP
+    await sendInviteEmail(profile.email, profile.full_name, inviteLink)
 
     // Collega auth_user_id al profilo
-    if (inviteData?.user?.id) {
+    if (linkData?.user?.id) {
       await supabaseAdmin
         .from('profiles')
-        .update({ auth_user_id: inviteData.user.id })
+        .update({ auth_user_id: linkData.user.id })
         .eq('id', profileId)
     }
 
