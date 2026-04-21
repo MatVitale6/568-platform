@@ -14,11 +14,11 @@ function getNextColor(employees: EmployeeDetail[]): string {
 }
 
 const INITIAL_EMPLOYEES: EmployeeDetail[] = [
-	{ id: '1', name: 'Mario Rossi', fiscalCode: 'RSSMRA80A01H501Z', email: 'mario.rossi@email.com', phone: '3331234567', contractEnd: '', color: '#6366f1', invited: true },
-	{ id: '2', name: 'Giulia Bianchi', fiscalCode: 'BNCGLI85M41L219Y', email: 'giulia.bianchi@email.com', phone: '3342345678', contractEnd: '2026-12-31', color: '#f43f5e', invited: true },
-	{ id: '3', name: 'Luca Verdi', fiscalCode: 'VRDLCU90B01F205X', email: 'luca.verdi@email.com', phone: '3353456789', contractEnd: '', color: '#f59e0b', invited: false },
-	{ id: '4', name: 'Anna Neri', fiscalCode: 'NRANNA92C41H501W', email: 'anna.neri@email.com', phone: '3364567890', contractEnd: '', color: '#10b981', invited: true },
-	{ id: '5', name: 'Carlo Blu', fiscalCode: 'BLUCRL88D01L219V', email: 'carlo.blu@email.com', phone: '3375678901', contractEnd: '', color: '#3b82f6', invited: true },
+	{ id: '1', name: 'Mario Rossi', fiscalCode: 'RSSMRA80A01H501Z', email: 'mario.rossi@email.com', phone: '3331234567', contractEnd: '', color: '#6366f1', invited: true, firstLoginCompleted: true },
+	{ id: '2', name: 'Giulia Bianchi', fiscalCode: 'BNCGLI85M41L219Y', email: 'giulia.bianchi@email.com', phone: '3342345678', contractEnd: '2026-12-31', color: '#f43f5e', invited: true, firstLoginCompleted: true },
+	{ id: '3', name: 'Luca Verdi', fiscalCode: 'VRDLCU90B01F205X', email: 'luca.verdi@email.com', phone: '3353456789', contractEnd: '', color: '#f59e0b', invited: false, firstLoginCompleted: false },
+	{ id: '4', name: 'Anna Neri', fiscalCode: 'NRANNA92C41H501W', email: 'anna.neri@email.com', phone: '3364567890', contractEnd: '', color: '#10b981', invited: true, firstLoginCompleted: false },
+	{ id: '5', name: 'Carlo Blu', fiscalCode: 'BLUCRL88D01L219V', email: 'carlo.blu@email.com', phone: '3375678901', contractEnd: '', color: '#3b82f6', invited: true, firstLoginCompleted: true },
 ];
 
 interface EmployeeFormData {
@@ -40,7 +40,7 @@ export function useEmployees() {
 
 		const { data, error: loadError } = await supabase
 			.from('profiles')
-			.select('id, full_name, email, role, color, employees!inner(fiscal_code, phone, contract_end, invited)')
+			.select('id, full_name, email, role, color, first_login_completed, employees!inner(fiscal_code, phone, contract_end, invited)')
 			.order('created_at', { ascending: true });
 
 		if (loadError) {
@@ -62,6 +62,7 @@ export function useEmployees() {
 				phone: (employeeRow as { phone?: string })?.phone ?? '',
 				contractEnd: (employeeRow as { contract_end?: string })?.contract_end ?? '',
 				invited: (employeeRow as { invited?: boolean })?.invited ?? false,
+				firstLoginCompleted: (row as { first_login_completed?: boolean }).first_login_completed ?? false,
 			};
 		});
 
@@ -108,6 +109,7 @@ export function useEmployees() {
 				...data,
 				color,
 				invited: false,
+				firstLoginCompleted: false,
 			};
 			setEmployees(prev => [...prev, newEmp]);
 			return newEmp;

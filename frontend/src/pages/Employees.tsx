@@ -146,7 +146,11 @@ export default function Employees() {
 								<p className="text-xs text-slate-500 truncate">{emp.email}</p>
 							</div>
 							{/* Badge invito */}
-							{emp.invited ? (
+						{emp.firstLoginCompleted ? (
+							<span className="text-[10px] font-semibold text-indigo-600 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-full shrink-0">
+								Attivo
+							</span>
+						) : emp.invited ? (
 								<span className="text-[10px] font-semibold text-green-600 bg-green-50 border border-green-200 px-2 py-0.5 rounded-full shrink-0">
 									Invitato
 								</span>

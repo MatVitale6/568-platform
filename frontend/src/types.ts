@@ -11,6 +11,7 @@ export interface EmployeeDetail extends Employee {
   phone: string
   contractEnd: string
   invited: boolean
+  firstLoginCompleted: boolean
 }
 
 export interface ShiftEmployee {
