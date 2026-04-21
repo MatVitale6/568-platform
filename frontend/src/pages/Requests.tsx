@@ -223,7 +223,6 @@ export default function Requests() {
 					)}
 				</div>
 			</div>
-			)}
 
 			{loading && (
 				<div className="flex flex-col items-center text-center py-16 px-8 bg-white">
