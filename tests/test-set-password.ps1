@@ -8,7 +8,7 @@ param(
 )
 
 $SUPABASE_URL    = "https://fnwuanftlhbqksldgafe.supabase.co"
-$SUPABASE_ANON   = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZud3VhbmZ0bGhicWtzbGRnYWZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM3NjAyNzAsImV4cCI6MjA1OTMzNjI3MH0.UEnklILFmEjkh1QbSu3xBJJT4gvI-2xVtBwnOPXxgH4"
+$SUPABASE_ANON   = if ($env:SUPABASE_ANON_KEY) { $env:SUPABASE_ANON_KEY } else { throw "Imposta \$env:SUPABASE_ANON_KEY prima di eseguire il test" }
 
 function OK   { param($msg) Write-Host "  [PASS] $msg" -ForegroundColor Green }
 function FAIL { param($msg) Write-Host "  [FAIL] $msg" -ForegroundColor Red }

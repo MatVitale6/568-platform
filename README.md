@@ -1,103 +1,151 @@
 ﻿# 568 Platform
 
-Private web app for weekly shift planning.
+Web app per la gestione dei turni settimanali del locale 568.
 
 ## Stack
 
 | Layer | Tech |
 |---|---|
-| Frontend | React 19 + Vite |
+| Frontend | React 19 + Vite + TypeScript |
 | UI | Tailwind CSS v4 + Shadcn/ui |
-| Routing | React Router |
-| Backend | Supabase |
+| Routing | React Router v7 |
+| Backend | Supabase (Postgres + Auth + Edge Functions) |
+| Notifiche | Resend (email) + Telegram Bot |
 | Deploy | Vercel |
+| Test | Vitest + Testing Library |
 
-## Current status
+## Funzionalità
 
-### Working
-- Login with role-based access
-- Supabase auth bootstrap for the first admin
-- Employee management backed by Supabase
-- Weekly calendar backed by Supabase
-- Create and update shifts
-- Copy one week across a date range
-- In-app swap requests page with pending badge
-- Accept / reject swap requests inside the web app
-- Web Push subscription UI and service worker base
-- Closed days handling
-- Swap request creation
-- Mobile-first layout
+### Operative
+- Login con autenticazione Supabase e ruoli (admin / employee)
+- Primo accesso con link di invito → imposta password → accesso automatico
+- Gestione dipendenti: crea, modifica, elimina, invita via email o link diretto
+- Badge stato dipendente: **Non invitato** / **Invitato** / **Attivo** (ha completato il primo accesso)
+- Calendario turni settimanale con navigazione e copia settimana
+- Creazione e modifica turni con drag-and-drop
+- Gestione giorni di chiusura
+- Richieste di cambio turno con badge pending
+- Accettazione / rifiuto cambi turno
+- Notifiche email (Resend) per ogni evento swap e digest settimanale
+- Notifiche Telegram: collegamento account tramite bot, notifiche swap e digest settimanale
+- Layout mobile-first / PWA-ready
 
-### Still missing
-- Real notifications (Web Push / Telegram)
-- First-login password reset flow
-- Final PWA packaging and Vercel deployment
+### Non ancora implementato
+- Web Push (infrastruttura presente, in attesa di dominio verificato per VAPID)
+- Dominio email verificato su Resend (attualmente sandbox `onboarding@resend.dev`)
 
-## Project structure
+## Struttura del progetto
 
 ```text
-src/
-  components/
-    calendar/
-    employees/
-    modals/
-    ui/
-  context/
-  hooks/
-  lib/
-  pages/
+frontend/
+  src/
+    __tests__/          # Test routing (Gruppo B)
+    components/
+      calendar/
+      employees/
+      modals/
+      ui/
+    context/
+      __tests__/        # Test mapSupabaseUser (Gruppo A)
+      AuthContext.tsx
+      RequestsContext.tsx
+    hooks/
+    lib/
+      __tests__/        # Test colorUtils (Gruppo A)
+      colorUtils.ts     # Funzioni pure per colori avatar
+      supabase.ts
+    pages/
 supabase/
+  functions/
+    send-email/         # Notifiche swap via email + Telegram
+    send-invite/        # Invito dipendenti (email o link diretto)
+    telegram-webhook/   # Webhook bot Telegram per collegamento account
+    weekly-digest/      # Digest settimanale email + Telegram
   schema.sql
   bootstrap_admin.sql
+  telegram.sql
+  push_notifications.sql
+tests/
+  test-set-password.ps1   # Test API PowerShell (richiede $env:SUPABASE_ANON_KEY)
+  e2e-set-password.js     # Test E2E Puppeteer
+test-telegram.ps1         # Test integrazione Telegram (richiede $env:TELEGRAM_BOT_TOKEN)
 ```
 
-## Local setup
+## Setup locale
 
-### Requirements
+### Requisiti
 - Node.js 18+
 - npm 9+
-- Supabase project
+- Progetto Supabase
 
-### Install
+### Installazione
 
 ```bash
 git clone https://github.com/MatVitale6/568-platform.git
-cd 568-platform
+cd 568-platform/frontend
 npm install
 ```
 
-### Environment
+### Variabili d'ambiente
 
-Create `.env.local` from `.env.example` and set:
+Crea `frontend/.env.local` partendo da `frontend/.env.example`:
 
 ```bash
-VITE_SUPABASE_URL=...
-VITE_SUPABASE_ANON_KEY=...
+VITE_SUPABASE_URL=https://<project-ref>.supabase.co
+VITE_SUPABASE_ANON_KEY=<anon-key>
 ```
 
-### Run
+### Avvio
 
 ```bash
+cd frontend
 npm run dev
 ```
 
-## Supabase bootstrap
+### Test
 
-Run [supabase/schema.sql](supabase/schema.sql) in the Supabase SQL Editor.
+```bash
+cd frontend
+npm test          # run once
+npm run test:watch  # modalità watch
+```
 
-Then create the first auth user in Supabase Authentication and run [supabase/bootstrap_admin.sql](supabase/bootstrap_admin.sql) after replacing placeholder values.
+## Bootstrap Supabase
 
-To enable the full swap-request workflow, run [supabase/swap_request_workflow.sql](supabase/swap_request_workflow.sql) in the Supabase SQL Editor as well.
+Esegui i seguenti SQL nell'ordine nel SQL Editor di Supabase:
 
-To enable Web Push subscriptions, run [supabase/push_notifications.sql](supabase/push_notifications.sql) in the Supabase SQL Editor.
+1. **[supabase/schema.sql](supabase/schema.sql)** — schema principale
+2. **[supabase/bootstrap_admin.sql](supabase/bootstrap_admin.sql)** — crea il primo utente admin (sostituire i placeholder)
+3. **[supabase/swap_request_workflow.sql](supabase/swap_request_workflow.sql)** — workflow richieste cambio turno
+4. **[supabase/push_notifications.sql](supabase/push_notifications.sql)** — tabelle Web Push
+5. **[supabase/telegram.sql](supabase/telegram.sql)** — colonna `telegram_chat_id`, tabella token collegamento, RPC
 
-If you already enabled push notifications before this fix, also run [supabase/push_notifications.sql](supabase/push_notifications.sql) again so the RPC helpers for subscription registration are created.
+Poi eseguire `NOTIFY pgrst, 'reload schema';` per aggiornare la cache PostgREST.
 
-To send push notifications, deploy the Edge Function in [supabase/functions/send-push/index.ts](supabase/functions/send-push/index.ts) and configure these secrets in Supabase Functions:
-- `SUPABASE_SERVICE_ROLE_KEY`
-- `VAPID_PUBLIC_KEY`
-- `VAPID_PRIVATE_KEY`
-- `VAPID_SUBJECT`
+## Edge Functions
+
+Deploy con:
+
+```bash
+npx supabase functions deploy <nome-funzione> --project-ref <ref> --use-api
+```
+
+Secrets da configurare in Supabase Dashboard → Functions → Secrets:
+
+| Secret | Descrizione |
+|---|---|
+| `RESEND_API_KEY` | Chiave API Resend per email |
+| `TELEGRAM_BOT_TOKEN` | Token del bot Telegram |
+| `TELEGRAM_WEBHOOK_SECRET` | Secret header per il webhook Telegram |
+| `SUPABASE_SERVICE_ROLE_KEY` | Chiave service role (già disponibile di default) |
+| `APP_URL` | URL dell'app (`https://568-platform.vercel.app`) |
+
+## Deploy
+
+```bash
+npx vercel --prod
+```
+
 
 ## Data model
 

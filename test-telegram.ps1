@@ -1,7 +1,9 @@
 # Test Telegram Integration
-# Usage: .\test-telegram.ps1
+# Usage: .\ test-telegram.ps1
+# Imposta la variabile d'ambiente prima di eseguire:
+#   $env:TELEGRAM_BOT_TOKEN = "<il tuo token>"
 
-$BOT_TOKEN      = "TELEGRAM_BOT_TOKEN_REMOVED"
+$BOT_TOKEN      = if ($env:TELEGRAM_BOT_TOKEN) { $env:TELEGRAM_BOT_TOKEN } else { throw "Imposta \$env:TELEGRAM_BOT_TOKEN prima di eseguire il test" }
 $WEBHOOK_SECRET = "TurniBot568Webhook"
 $WEBHOOK_URL    = "https://fnwuanftlhbqksldgafe.supabase.co/functions/v1/telegram-webhook"
 
