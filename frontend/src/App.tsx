@@ -39,15 +39,17 @@ function AppRoutes() {
 						: <Navigate to="/set-password" replace />
 				} />
 			<Route
-				path="/set-password"
-				element={
-					!user
-						? <Navigate to="/login" replace />
-						: user.firstLoginCompleted
-							? <Navigate to="/calendar" replace />
-							: <SetPassword />
-				}
-			/>
+			path="/set-password"
+			element={
+				!user
+					// Se l'URL ha access_token nell'hash, stiamo aspettando che onAuthStateChange
+					// processi il token dell'invito — mostra loader invece di mandare a /login
+					? (window.location.hash.includes('access_token') ? <ScreenLoader /> : <Navigate to="/login" replace />)
+					: user.firstLoginCompleted
+						? <Navigate to="/calendar" replace />
+						: <SetPassword />
+			}
+		/>
 			<Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
 				<Route index element={<Navigate to="/calendar" replace />} />
 				<Route path="calendar" element={<Calendar />} />
