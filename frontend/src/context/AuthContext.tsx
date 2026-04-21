@@ -108,6 +108,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 		let mounted = true;
 
 		const bootstrap = async () => {
+			// Se l'URL contiene un token di invito/recovery nell'hash, non impostare
+			// loading=false qui: onAuthStateChange si occuperà di tutto quando
+			// Supabase processa il token. Senza questa guardia si finisce su /login
+			// perché getSession() restituisce null prima che il token venga consumato.
+			if (window.location.hash.includes('access_token')) {
+				return;
+			}
+
 			try {
 				const { data, error } = await withTimeout(
 					sb.auth.getSession(),

@@ -42,9 +42,7 @@ function AppRoutes() {
 			path="/set-password"
 			element={
 				!user
-					// Se l'URL ha access_token nell'hash, stiamo aspettando che onAuthStateChange
-					// processi il token dell'invito — mostra loader invece di mandare a /login
-					? (window.location.hash.includes('access_token') ? <ScreenLoader /> : <Navigate to="/login" replace />)
+					? <Navigate to="/login" replace />
 					: user.firstLoginCompleted
 						? <Navigate to="/calendar" replace />
 						: <SetPassword />
