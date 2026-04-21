@@ -2,19 +2,11 @@ import { useState } from 'react';
 import { useEmployees } from '@/hooks/useEmployees';
 import EmployeeSheet from '@/components/employees/EmployeeSheet';
 import DeleteConfirmDialog from '@/components/employees/DeleteConfirmDialog';
+import { getAvatarTextColor } from '@/lib/colorUtils';
 import type { EmployeeDetail } from '@/types';
 
 function Spinner() {
 	return <span className="inline-block w-3.5 h-3.5 rounded-full border-2 border-current border-t-transparent animate-spin" />;
-}
-
-function getAvatarTextColor(hex: string): string {
-	const r = parseInt(hex.slice(1, 3), 16);
-	const g = parseInt(hex.slice(3, 5), 16);
-	const b = parseInt(hex.slice(5, 7), 16);
-	const toLinear = (c: number) => { const s = c / 255; return s <= 0.04045 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4); };
-	const L = 0.2126 * toLinear(r) + 0.7152 * toLinear(g) + 0.0722 * toLinear(b);
-	return L > 0.179 ? '#1e293b' : '#ffffff';
 }
 
 export default function Employees() {

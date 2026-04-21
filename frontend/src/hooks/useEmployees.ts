@@ -1,17 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
+import { COLOR_PALETTE, getNextColor } from '@/lib/colorUtils';
 import type { EmployeeDetail } from '@/types';
-
-const COLOR_PALETTE = [
-	'#6366f1', '#f43f5e', '#f59e0b', '#10b981', '#3b82f6',
-	'#8b5cf6', '#ec4899', '#06b6d4', '#84cc16', '#f97316',
-];
-
-function getNextColor(employees: EmployeeDetail[]): string {
-	const usedColors = employees.map(e => e.color);
-	const available = COLOR_PALETTE.find(c => !usedColors.includes(c));
-	return available ?? COLOR_PALETTE[employees.length % COLOR_PALETTE.length];
-}
 
 const INITIAL_EMPLOYEES: EmployeeDetail[] = [
 	{ id: '1', name: 'Mario Rossi', fiscalCode: 'RSSMRA80A01H501Z', email: 'mario.rossi@email.com', phone: '3331234567', contractEnd: '', color: '#6366f1', invited: true, firstLoginCompleted: true },

@@ -9,7 +9,7 @@ import Layout from '@/components/Layout';
 import SetPassword from '@/pages/SetPassword';
 import type { ReactNode } from 'react';
 
-function ProtectedRoute({ children }: { children: ReactNode }) {
+export function ProtectedRoute({ children }: { children: ReactNode }) {
 	const { user, loading } = useAuth();
 	if (loading) return <ScreenLoader />;
 	if (!user) return <Navigate to="/login" replace />;

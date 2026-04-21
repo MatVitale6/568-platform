@@ -30,7 +30,7 @@ function mapMockUser(userData: AppUser): AppUser {
 	return userData;
 }
 
-interface SupabaseProfile {
+export interface SupabaseProfile {
 	id: string
 	auth_user_id: string | null
 	full_name: string
@@ -41,13 +41,13 @@ interface SupabaseProfile {
 	telegram_chat_id: string | null
 }
 
-interface SupabaseAuthUser {
+export interface SupabaseAuthUser {
 	id: string
 	email?: string
 	user_metadata?: Record<string, string>
 }
 
-function mapSupabaseUser(authUser: SupabaseAuthUser, profile: SupabaseProfile | null): AppUser {
+export function mapSupabaseUser(authUser: SupabaseAuthUser, profile: SupabaseProfile | null): AppUser {
 	const fallbackName = authUser.user_metadata?.full_name || authUser.user_metadata?.name || authUser.email?.split('@')[0] || 'Utente';
 
 	return {
