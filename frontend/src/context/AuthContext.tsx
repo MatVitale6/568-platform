@@ -36,6 +36,7 @@ interface SupabaseProfile {
 	role: string
 	color: string | null
 	first_login_completed: boolean
+	telegram_chat_id: string | null
 }
 
 interface SupabaseAuthUser {
@@ -55,6 +56,7 @@ function mapSupabaseUser(authUser: SupabaseAuthUser, profile: SupabaseProfile | 
 		role: (profile?.role ?? authUser.user_metadata?.role ?? 'employee') as AppUser['role'],
 		color: profile?.color ?? authUser.user_metadata?.color ?? '#6366f1',
 		firstLoginCompleted: profile?.first_login_completed ?? false,
+		telegramLinked: !!profile?.telegram_chat_id,
 	};
 }
 
@@ -64,7 +66,7 @@ async function getProfileForUser(userId: string): Promise<SupabaseProfile | null
 	const { data: byAuthUserId, error: byAuthUserIdError } = await withTimeout(
 		supabase
 			.from('profiles')
-			.select('id, auth_user_id, full_name, email, role, color, first_login_completed')
+			.select('id, auth_user_id, full_name, email, role, color, first_login_completed, telegram_chat_id')
 			.eq('auth_user_id', userId)
 			.maybeSingle(),
 		AUTH_TIMEOUT_MS,
@@ -77,7 +79,7 @@ async function getProfileForUser(userId: string): Promise<SupabaseProfile | null
 	const { data, error } = await withTimeout(
 		supabase
 			.from('profiles')
-			.select('id, auth_user_id, full_name, email, role, color, first_login_completed')
+			.select('id, auth_user_id, full_name, email, role, color, first_login_completed, telegram_chat_id')
 			.eq('id', userId)
 			.maybeSingle(),
 		AUTH_TIMEOUT_MS,

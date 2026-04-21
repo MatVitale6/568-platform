@@ -9,9 +9,27 @@ const corsHeaders = {
 const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? ''
 const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
 const resendApiKey = Deno.env.get('RESEND_API_KEY') ?? ''
+const botToken = Deno.env.get('TELEGRAM_BOT_TOKEN') ?? ''
 const appUrl = Deno.env.get('APP_URL') ?? 'https://568-platform.vercel.app'
 
 const supabase = createClient(supabaseUrl, serviceRoleKey)
+
+// ────────────────────────────────────────────────
+//  Helper: send Telegram message via Bot API
+// ────────────────────────────────────────────────
+async function sendViaTelegram(chatId: string | null | undefined, text: string): Promise<void> {
+  if (!botToken || !chatId) return
+  try {
+    const res = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'HTML' }),
+    })
+    if (!res.ok) console.warn('Telegram error:', await res.text())
+  } catch (e) {
+    console.warn('Telegram send failed:', e)
+  }
+}
 
 // ────────────────────────────────────────────────
 //  Helper: send email via Resend API
@@ -113,10 +131,10 @@ async function handleSwapNotification(body: {
 }) {
   const { type, requesterId, targetId, workDate } = body
 
-  // Fetch names + emails from profiles
+  // Fetch names + emails + telegram chat ids from profiles
   const { data: profiles, error } = await supabase
     .from('profiles')
-    .select('id, full_name, email')
+    .select('id, full_name, email, telegram_chat_id')
     .in('id', [requesterId, targetId])
 
   if (error) throw new Error(`Errore caricamento profili: ${error.message}`)
@@ -126,24 +144,44 @@ async function handleSwapNotification(body: {
 
   if (!requester || !target) throw new Error('Profili non trovati')
 
+  const dateStr = new Date(workDate + 'T12:00:00').toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' })
+
   if (type === 'swap_new') {
-    await sendViaResend(
-      [target.email],
-      `${requester.full_name} ti ha chiesto un cambio turno`,
-      swapNewTemplate(requester.full_name, target.full_name, workDate),
-    )
+    await Promise.all([
+      sendViaResend(
+        [target.email],
+        `${requester.full_name} ti ha chiesto un cambio turno`,
+        swapNewTemplate(requester.full_name, target.full_name, workDate),
+      ),
+      sendViaTelegram(
+        target.telegram_chat_id,
+        `🔄 <b>Nuova richiesta cambio turno</b>\n\n<b>${requester.full_name}</b> ti ha chiesto di cambiare il turno del <b>${dateStr}</b>.\n\n👉 <a href="${appUrl}/requests">Rispondi nell'app</a>`,
+      ),
+    ])
   } else if (type === 'swap_accepted') {
-    await sendViaResend(
-      [requester.email],
-      `${target.full_name} ha accettato il cambio turno`,
-      swapAcceptedTemplate(requester.full_name, target.full_name, workDate),
-    )
+    await Promise.all([
+      sendViaResend(
+        [requester.email],
+        `${target.full_name} ha accettato il cambio turno`,
+        swapAcceptedTemplate(requester.full_name, target.full_name, workDate),
+      ),
+      sendViaTelegram(
+        requester.telegram_chat_id,
+        `✅ <b>Richiesta accettata</b>\n\n<b>${target.full_name}</b> ha accettato il tuo cambio turno del <b>${dateStr}</b>.`,
+      ),
+    ])
   } else if (type === 'swap_rejected') {
-    await sendViaResend(
-      [requester.email],
-      `${target.full_name} ha rifiutato il cambio turno`,
-      swapRejectedTemplate(requester.full_name, target.full_name, workDate),
-    )
+    await Promise.all([
+      sendViaResend(
+        [requester.email],
+        `${target.full_name} ha rifiutato il cambio turno`,
+        swapRejectedTemplate(requester.full_name, target.full_name, workDate),
+      ),
+      sendViaTelegram(
+        requester.telegram_chat_id,
+        `❌ <b>Richiesta rifiutata</b>\n\n<b>${target.full_name}</b> ha rifiutato il tuo cambio turno del <b>${dateStr}</b>.`,
+      ),
+    ])
   }
 }
 

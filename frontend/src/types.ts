@@ -32,6 +32,7 @@ export interface AppUser {
   role: 'admin' | 'employee'
   color: string
   firstLoginCompleted: boolean
+  telegramLinked?: boolean
 }
 
 export interface SwapRequest {

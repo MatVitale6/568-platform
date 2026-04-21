@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useRequests } from '@/context/RequestsContext';
 import { usePushNotifications, isWebPushConfigured } from '@/hooks/usePushNotifications';
+import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 import type { SwapRequest } from '@/types';
 
 const STATUS_STYLES: Record<string, string> = {
@@ -17,11 +18,60 @@ function formatDate(dateStr: string): string {
 }
 
 export default function Requests() {
-	const { user } = useAuth();
+	const { user, refreshProfile } = useAuth();
 	const { requests, loading, error, respondToSwapRequest } = useRequests();
 	const push = usePushNotifications();
 	const [actionError, setActionError] = useState('');
 	const [busyId, setBusyId] = useState<string | null>(null);
+
+	// Telegram linking state
+	const [telegramToken, setTelegramToken] = useState<string | null>(null);
+	const [telegramLinking, setTelegramLinking] = useState(false);
+	const [telegramChecking, setTelegramChecking] = useState(false);
+	const [telegramError, setTelegramError] = useState('');
+
+	const handleGenerateTelegramLink = async () => {
+		if (!isSupabaseConfigured || !supabase) return;
+		setTelegramLinking(true);
+		setTelegramError('');
+		try {
+			const { data, error: rpcError } = await supabase.rpc('generate_telegram_link_token');
+			if (rpcError) throw rpcError;
+			setTelegramToken(data as string);
+		} catch (e) {
+			setTelegramError((e as Error).message || 'Errore generazione codice');
+		} finally {
+			setTelegramLinking(false);
+		}
+	};
+
+	const handleCheckTelegramLink = async () => {
+		setTelegramChecking(true);
+		setTelegramError('');
+		try {
+			await refreshProfile();
+			setTelegramToken(null);
+		} catch (e) {
+			setTelegramError((e as Error).message || 'Errore verifica');
+		} finally {
+			setTelegramChecking(false);
+		}
+	};
+
+	const handleUnlinkTelegram = async () => {
+		if (!isSupabaseConfigured || !supabase) return;
+		setTelegramLinking(true);
+		setTelegramError('');
+		try {
+			const { error: rpcError } = await supabase.rpc('unlink_telegram');
+			if (rpcError) throw rpcError;
+			await refreshProfile();
+		} catch (e) {
+			setTelegramError((e as Error).message || 'Errore scollegamento');
+		} finally {
+			setTelegramLinking(false);
+		}
+	};
 
 	const handleDecision = async (requestId: string, decision: string) => {
 		setActionError('');
@@ -97,10 +147,82 @@ export default function Requests() {
 				</div>
 			</div>
 
-			{(error || actionError) && (
-				<div className="mx-4 mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-					{actionError || error}
+			{/* Telegram linking */}
+			<div className="bg-white px-4 py-4 border-b border-slate-100">
+				<div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 space-y-3">
+					<div className="flex items-start justify-between gap-3">
+						<div>
+							<p className="font-semibold text-slate-800">Notifiche Telegram</p>
+							<p className="text-sm text-slate-500 mt-1">
+								Collega il tuo account Telegram per ricevere notifiche istantanee su richieste e turni.
+							</p>
+						</div>
+						<svg className="w-8 h-8 shrink-0 text-sky-500" viewBox="0 0 24 24" fill="currentColor">
+							<path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.248-2.018 9.51c-.15.686-.543.853-1.1.53l-3.036-2.237-1.465 1.41c-.162.162-.3.3-.614.3l.219-3.1 5.639-5.093c.245-.219-.053-.34-.383-.121l-6.974 4.39-3.005-.937c-.652-.204-.665-.652.138-.964l11.73-4.524c.543-.196 1.017.12.869.836z" />
+						</svg>
+					</div>
+
+					{user?.telegramLinked && !telegramToken && (
+						<div className="flex items-center gap-2 text-sm text-green-700 bg-green-50 border border-green-200 rounded-xl px-3 py-2">
+							<svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+							</svg>
+							Account Telegram collegato
+						</div>
+					)}
+
+					{telegramError && (
+						<p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-xl px-3 py-2">
+							{telegramError}
+						</p>
+					)}
+
+					{telegramToken && (
+						<div className="space-y-2">
+							<p className="text-sm text-slate-600">
+								Apri il link su Telegram e tocca <strong>Start</strong>:
+							</p>
+							<a
+								href={`https://t.me/Turni568Bot?start=${telegramToken}`}
+								target="_blank"
+								rel="noreferrer"
+								className="block text-center rounded-xl bg-sky-50 border border-sky-200 py-3 text-sm font-semibold text-sky-700 hover:bg-sky-100"
+							>
+								📱 Apri @Turni568Bot
+							</a>
+							<button
+								onClick={handleCheckTelegramLink}
+								disabled={telegramChecking}
+								className="w-full rounded-xl border border-slate-200 bg-white py-3 text-sm font-semibold text-slate-700 hover:bg-slate-100 disabled:opacity-70"
+							>
+								{telegramChecking ? 'Verifica in corso...' : '✓ Ho collegato — Verifica'}
+							</button>
+						</div>
+					)}
+
+					{!telegramToken && (
+						<div className="flex gap-2">
+							{user?.telegramLinked ? (
+								<button
+									onClick={handleUnlinkTelegram}
+									disabled={telegramLinking}
+									className="flex-1 rounded-xl border border-slate-200 bg-white py-3 text-sm font-semibold text-slate-700 hover:bg-slate-100 disabled:opacity-70"
+								>
+									{telegramLinking ? 'Scollegamento...' : 'Scollega Telegram'}
+								</button>
+							) : (
+								<button
+									onClick={handleGenerateTelegramLink}
+									disabled={telegramLinking}
+									className="flex-1 rounded-xl border border-sky-200 bg-sky-50 py-3 text-sm font-semibold text-sky-700 hover:bg-sky-100 disabled:opacity-70"
+								>
+									{telegramLinking ? 'Generazione link...' : 'Collega Telegram'}
+								</button>
+							)}
+						</div>
+					)}
 				</div>
+			</div>
 			)}
 
 			{loading && (

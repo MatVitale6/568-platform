@@ -3,6 +3,7 @@ import { createClient } from 'npm:@supabase/supabase-js@2.100.1'
 const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? ''
 const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
 const resendApiKey = Deno.env.get('RESEND_API_KEY') ?? ''
+const botToken = Deno.env.get('TELEGRAM_BOT_TOKEN') ?? ''
 const appUrl = Deno.env.get('APP_URL') ?? 'https://568-platform.vercel.app'
 const fromEmail = Deno.env.get('EMAIL_FROM') ?? 'Turni 568 <noreply@568turni.it>'
 
@@ -126,10 +127,12 @@ async function sendDigest() {
   }
 
   let rows = ''
+  let telegramLines = ''
   for (const [dateStr, shift] of Object.entries(shiftsByDate)) {
     const dayLabel = formatItalian(dateStr)
     if (!shift || shift.is_closed) {
       rows += `<tr><td>${dayLabel}</td><td class="closed">Chiuso</td></tr>`
+      telegramLines += `${dayLabel} — Chiuso\n`
     } else {
       const employees = shift.shift_assignments
         ?.map((a: { profiles: { full_name: string; color: string } }) => {
@@ -139,14 +142,19 @@ async function sendDigest() {
         })
         .join(' ') ?? '—'
 
+      const empNames = shift.shift_assignments
+        ?.map((a: { profiles: { full_name: string } }) => a.profiles?.full_name ?? '?')
+        .join(', ') ?? '—'
+
       rows += `<tr><td>${dayLabel}</td><td>${employees}</td></tr>`
+      telegramLines += `${dayLabel} — ${empNames}\n`
     }
   }
 
-  // Fetch all active employee emails
+  // Fetch all active employee emails + telegram chat ids
   const { data: profiles, error: profilesError } = await supabase
     .from('profiles')
-    .select('email, full_name')
+    .select('email, full_name, telegram_chat_id')
     .eq('role', 'employee')
 
   if (profilesError) throw new Error(`Errore profiles: ${profilesError.message}`)
@@ -184,8 +192,28 @@ async function sendDigest() {
     }
   }
 
-  console.log(`Digest settimanale inviato a ${sent}/${emails.length} dipendenti`)
-  return { sent, total: emails.length }
+  // Send Telegram digest to employees who have linked their account
+  const telegramText = `📅 <b>Turni della settimana</b>\n${weekLabel}\n\n${telegramLines}\n👉 <a href="${appUrl}/calendar">Apri calendario</a>`
+  let telegramSent = 0
+  if (botToken) {
+    for (const profile of profiles ?? []) {
+      if (!profile.telegram_chat_id) continue
+      try {
+        const res = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ chat_id: profile.telegram_chat_id, text: telegramText, parse_mode: 'HTML' }),
+        })
+        if (res.ok) telegramSent++
+        else console.warn(`Errore Telegram per ${profile.full_name}: ${await res.text()}`)
+      } catch (e) {
+        console.warn(`Errore Telegram per ${profile.full_name}:`, e)
+      }
+    }
+  }
+
+  console.log(`Digest settimanale inviato a ${sent}/${emails.length} via email, ${telegramSent} via Telegram`)
+  return { sent, total: emails.length, telegramSent }
 }
 
 // ────────────────────────────────────────────────
