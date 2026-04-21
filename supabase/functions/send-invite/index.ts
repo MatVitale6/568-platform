@@ -84,7 +84,8 @@ Deno.serve(async (request) => {
       return Response.json({ error: 'Accesso non autorizzato' }, { status: 403, headers: corsHeaders })
     }
 
-    const { profileId } = await request.json()
+    const body = await request.json()
+    const { profileId, copyOnly } = body as { profileId?: string; copyOnly?: boolean }
     if (!profileId) {
       return Response.json({ error: 'Missing profileId' }, { status: 400, headers: corsHeaders })
     }
@@ -132,9 +133,11 @@ Deno.serve(async (request) => {
           return Response.json({ error: 'Link recovery non valido' }, { status: 500, headers: corsHeaders })
         }
 
-        await sendInviteEmail(profile.email, profile.full_name, recoveryLink)
+        if (!copyOnly) {
+          await sendInviteEmail(profile.email, profile.full_name, recoveryLink)
+        }
         await supabaseAdmin.from('employees').update({ invited: true }).eq('profile_id', profileId)
-        return Response.json({ ok: true, action: 'recovery_link_sent', email: profile.email }, { headers: corsHeaders })
+        return Response.json({ ok: true, action: copyOnly ? 'recovery_link_copy' : 'recovery_link_sent', email: profile.email, link: copyOnly ? recoveryLink : undefined }, { headers: corsHeaders })
       }
 
       return Response.json({ error: `Errore generazione link: ${linkError.message}` }, { status: 500, headers: corsHeaders })
@@ -145,8 +148,10 @@ Deno.serve(async (request) => {
       return Response.json({ error: 'Link invito non valido' }, { status: 500, headers: corsHeaders })
     }
 
-    // Invia email via Outlook SMTP
-    await sendInviteEmail(profile.email, profile.full_name, inviteLink)
+    // Invia email solo se non è copyOnly
+    if (!copyOnly) {
+      await sendInviteEmail(profile.email, profile.full_name, inviteLink)
+    }
 
     // Collega auth_user_id al profilo
     if (linkData?.user?.id) {
@@ -159,7 +164,7 @@ Deno.serve(async (request) => {
     // Segna come invitato nel DB
     await supabaseAdmin.from('employees').update({ invited: true }).eq('profile_id', profileId)
 
-    return Response.json({ ok: true, action: 'invite_sent', email: profile.email }, { headers: corsHeaders })
+    return Response.json({ ok: true, action: copyOnly ? 'invite_link_copy' : 'invite_sent', email: profile.email, link: copyOnly ? inviteLink : undefined }, { headers: corsHeaders })
   } catch (err) {
     console.error('send-invite error:', err)
     return Response.json({ error: err.message ?? 'Internal error' }, { status: 500, headers: corsHeaders })

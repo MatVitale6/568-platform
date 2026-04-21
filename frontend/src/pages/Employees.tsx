@@ -18,11 +18,13 @@ function getAvatarTextColor(hex: string): string {
 }
 
 export default function Employees() {
-	const { employees, loading, error, addEmployee, updateEmployee, deleteEmployee, sendInvite } = useEmployees();
+	const { employees, loading, error, addEmployee, updateEmployee, deleteEmployee, sendInvite, copyInviteLink } = useEmployees();
 	const [sheet, setSheet] = useState<'create' | EmployeeDetail | null>(null);
 	const [toDelete, setToDelete] = useState<EmployeeDetail | null>(null);
 	const [inviteSent, setInviteSent] = useState<string | null>(null);
 	const [inviting, setInviting] = useState<string | null>(null);
+	const [copying, setCopying] = useState<string | null>(null);
+	const [copied, setCopied] = useState<string | null>(null);
 	const [deleting, setDeleting] = useState(false);
 	const [actionError, setActionError] = useState('');
 
@@ -65,6 +67,21 @@ export default function Employees() {
 			setActionError((inviteError as Error).message || 'Invito non riuscito');
 		} finally {
 			setInviting(null);
+		}
+	};
+
+	const handleCopyLink = async (emp: EmployeeDetail) => {
+		setActionError('');
+		setCopying(emp.id);
+		try {
+			const link = await copyInviteLink(emp.id);
+			await navigator.clipboard.writeText(link);
+			setCopied(emp.id);
+			setTimeout(() => setCopied(null), 3000);
+		} catch (copyError) {
+			setActionError((copyError as Error).message || 'Copia link non riuscita');
+		} finally {
+			setCopying(null);
 		}
 	};
 
@@ -165,6 +182,19 @@ export default function Employees() {
 									)}
 								</button>
 							)}
+							<button
+								onClick={() => handleCopyLink(emp)}
+								disabled={copying === emp.id}
+								className="flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold text-emerald-600 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 py-2 rounded-xl transition disabled:opacity-70"
+							>
+								{copied === emp.id ? (
+									<><svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg> Copiato!</>
+								) : copying === emp.id ? (
+									<><Spinner /> Genero...</>
+								) : (
+									<><svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg> Copia link</>
+								)}
+							</button>
 							<button
 								onClick={() => setSheet(emp)}
 								className="flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 py-2 rounded-xl transition"

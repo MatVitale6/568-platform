@@ -251,5 +251,30 @@ export function useEmployees() {
 		await reloadEmployees();
 	};
 
-	return { employees, loading, error, addEmployee, updateEmployee, deleteEmployee, sendInvite, reload: reloadEmployees };
+	const copyInviteLink = async (id: string): Promise<string> => {
+		if (!isSupabaseConfigured || !supabase) throw new Error('Supabase non configurato');
+
+		const { data, error: invokeError } = await supabase.functions.invoke('send-invite', {
+			body: { profileId: id, copyOnly: true },
+		});
+
+		let errMsg: string | null = null;
+		if (invokeError) {
+			try {
+				const body = await (invokeError as any).context?.json?.();
+				errMsg = body?.error ?? invokeError.message;
+			} catch {
+				errMsg = invokeError.message;
+			}
+			throw new Error(errMsg ?? 'Errore generazione link');
+		}
+
+		if (data?.error) throw new Error(data.error as string);
+		if (!data?.link) throw new Error('Link non ricevuto');
+
+		await reloadEmployees();
+		return data.link as string;
+	};
+
+	return { employees, loading, error, addEmployee, updateEmployee, deleteEmployee, sendInvite, copyInviteLink, reload: reloadEmployees };
 }
