@@ -5,7 +5,7 @@ import { useAuth } from '@/context/AuthContext';
 
 export default function SetPassword() {
 	const navigate = useNavigate();
-	const { user, completeFirstLogin } = useAuth();
+	const { user, completeFirstLogin, logout } = useAuth();
 	const [password, setPassword] = useState('');
 	const [confirm, setConfirm] = useState('');
 	const [submitting, setSubmitting] = useState(false);
@@ -121,6 +121,20 @@ export default function SetPassword() {
 						{submitting ? 'Salvataggio...' : 'Accedi all\'app →'}
 					</button>
 				</form>
+
+				{/* Escape hatch: se l'utente sbagliato e loggato puo uscire */}
+				<div className="mt-6 text-center">
+					<p className="text-slate-600 text-xs mb-2">
+						Accesso come <span className="text-slate-400">{user?.email}</span>
+					</p>
+					<button
+						type="button"
+						onClick={async () => { await logout(); navigate('/login', { replace: true }); }}
+						className="text-slate-500 hover:text-slate-300 text-xs underline underline-offset-2 transition"
+					>
+						Non sei tu? Esci
+					</button>
+				</div>
 			</div>
 		</div>
 	);

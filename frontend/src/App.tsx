@@ -31,7 +31,13 @@ function AppRoutes() {
 
 	return (
 		<Routes>
-			<Route path="/login" element={user ? <Navigate to="/calendar" replace /> : <Login />} />
+			<Route path="/login" element={
+				!user
+					? <Login />
+					: user.firstLoginCompleted
+						? <Navigate to="/calendar" replace />
+						: <Navigate to="/set-password" replace />
+				} />
 			<Route
 				path="/set-password"
 				element={
