@@ -45,8 +45,8 @@ BEGIN
   -- Remove stale tokens for this profile
   DELETE FROM public.telegram_link_tokens WHERE profile_id = v_profile_id;
 
-  -- 8-char uppercase hex token from 4 random bytes
-  v_token := upper(substring(encode(gen_random_bytes(4), 'hex') FROM 1 FOR 8));
+  -- 8-char uppercase hex token from a random UUID (no extension needed)
+  v_token := upper(substr(replace(gen_random_uuid()::text, '-', ''), 1, 8));
 
   INSERT INTO public.telegram_link_tokens (token, profile_id)
   VALUES (v_token, v_profile_id);

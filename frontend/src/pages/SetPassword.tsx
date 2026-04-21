@@ -5,7 +5,7 @@ import { useAuth } from '@/context/AuthContext';
 
 export default function SetPassword() {
 	const navigate = useNavigate();
-	const { user, refreshProfile } = useAuth();
+	const { user, completeFirstLogin } = useAuth();
 	const [password, setPassword] = useState('');
 	const [confirm, setConfirm] = useState('');
 	const [submitting, setSubmitting] = useState(false);
@@ -32,21 +32,25 @@ export default function SetPassword() {
 			const { data: sessionData } = await supabase.auth.getSession();
 			const authUserId = sessionData?.session?.user?.id;
 
-			// Segna first_login_completed = true NEL DB PRIMA di updateUser,
-			// così quando onAuthStateChange rilegge il profilo trova già il valore corretto
-			if (authUserId) {
-				await supabase
-					.from('profiles')
-					.update({ first_login_completed: true })
-					.eq('auth_user_id', authUserId);
-			}
+			if (!authUserId) throw new Error('Sessione non trovata. Riprova ad accedere.');
 
-			// Aggiorna la password (triggera onAuthStateChange — ora il DB è già aggiornato)
+			// Segna first_login_completed = true nel DB PRIMA di updateUser
+			const { error: dbError } = await supabase
+				.from('profiles')
+				.update({ first_login_completed: true })
+				.eq('auth_user_id', authUserId);
+
+			if (dbError) throw new Error(`Errore salvataggio profilo: ${dbError.message}`);
+
+			// Aggiornamento ottimistico sincrono: aggiorna lo stato React immediatamente.
+			// Evita la race condition in cui updateUser() ruota il token e refreshProfile()
+			// trova getSession()=null, lasciando firstLoginCompleted=false nello stato.
+			completeFirstLogin();
+
+			// Aggiorna la password (triggera onAuthStateChange — il DB è già aggiornato)
 			const { error: updateError } = await supabase.auth.updateUser({ password });
 			if (updateError) throw updateError;
 
-			// Ricarica il profilo nel context e vai al calendario
-			await refreshProfile();
 			navigate('/calendar', { replace: true });
 		} catch (err) {
 			setError((err as Error).message ?? 'Errore durante il salvataggio della password');

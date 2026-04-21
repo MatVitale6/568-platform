@@ -9,6 +9,8 @@ interface AuthContextValue {
 	loginWithPassword: (email: string, password: string) => Promise<AppUser>
 	logout: () => Promise<void>
 	refreshProfile: () => Promise<void>
+	/** Marca firstLoginCompleted=true nello stato React in modo sincrono, senza dipendere da getSession() */
+	completeFirstLogin: () => void
 	isMockMode: boolean
 }
 
@@ -178,6 +180,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 		setUser(mapSupabaseUser(data.session.user, profile));
 	};
 
+	// Aggiornamento ottimistico sincrono: evita la race condition con updateUser()
+	// che può ruotare il token e rendere getSession() transientemente null
+	const completeFirstLogin = () => {
+		setUser(prev => prev ? { ...prev, firstLoginCompleted: true } : prev);
+	};
+
 	const loginWithPassword = async (email: string, password: string): Promise<AppUser> => {
 		if (!isSupabaseConfigured || !supabase) {
 			throw new Error('Supabase non configurato');
@@ -202,7 +210,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 	};
 
 	return (
-		<AuthContext.Provider value={{ user, loading, login, loginWithPassword, logout, refreshProfile, isMockMode: !isSupabaseConfigured }}>
+		<AuthContext.Provider value={{ user, loading, login, loginWithPassword, logout, refreshProfile, completeFirstLogin, isMockMode: !isSupabaseConfigured }}>
 			{children}
 		</AuthContext.Provider>
 	);
