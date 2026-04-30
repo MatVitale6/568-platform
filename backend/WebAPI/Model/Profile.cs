@@ -9,8 +9,8 @@ namespace Five68.Model
 		public required UserRole Role { get; set; }
 		public string? Color { get; set; }
 		public bool FirstLoginCompleted { get; set; } = false;
-		public DateTime CreatedAt { get; set; }
-		public DateTime UpdatedAt { get; set; }
+		public DateTime CreatedAt { get; set; } = DateTime.Now;
+		public DateTime UpdatedAt { get; set; } = DateTime.Now;
 
 		// Navigation
 		public Employee? Employee { get; set; }

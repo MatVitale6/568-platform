@@ -5,7 +5,7 @@ services:
     profiles: [ init ]
     build:
       context: backend/
-      dockerfile: Five68Initializer/dockerfile
+      dockerfile: Five68Initializer/Dockerfile
     depends_on:
       - Five68-db
 
@@ -13,7 +13,7 @@ services:
   Five68-db:
     hostname: Five68-db
     container_name: Five68-postgres
-    image: postgres:latest
+    image: postgres:17
     restart: always
     environment:
       POSTGRES_USER: "postgres"
@@ -22,4 +22,4 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - ./io/database:/data/db
+      - ./io/database:/var/lib/postgresql/data

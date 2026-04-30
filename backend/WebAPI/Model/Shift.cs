@@ -6,8 +6,8 @@ namespace Five68.Model
 		public required DateTime WorkDate { get; set; }
 		public bool IsClosed { get; set; } = false;
 		public Guid? CreatedBy { get; set; }
-		public DateTime CreatedAt { get; set; }
-		public DateTime UpdatedAt { get; set; }
+		public DateTime CreatedAt { get; set; } = DateTime.Now;
+		public DateTime UpdatedAt { get; set; } = DateTime.Now;
 
 		public Profile Creator { get; set; } = null!;
 		public ICollection<ShiftAssignment> Assignments { get; set; } = [];
