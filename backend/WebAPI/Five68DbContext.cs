@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-using Five68.Model;
+using Five68.Models;
+using Five68.Models.Authentication;
 
 namespace Five68
 {
@@ -10,40 +11,41 @@ namespace Five68
 		{
 		}
 
-		public DbSet<Profile> Profiles => Set<Profile>();
+		public DbSet<User> Users => Set<User>();
 		public DbSet<Employee> Employees => Set<Employee>();
 		public DbSet<Shift> Shifts => Set<Shift>();
 		public DbSet<ShiftAssignment> ShiftAssignments => Set<ShiftAssignment>();
 		public DbSet<SwapRequest> SwapRequests => Set<SwapRequest>();
+		public DbSet<UserRefreshTokens> RefreshTokens => Set<UserRefreshTokens>();
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
 			base.OnModelCreating(modelBuilder);
 
-			modelBuilder.Entity<Profile>(e =>
+			modelBuilder.Entity<User>(e =>
 			{
-				e.ToTable("profile");
+				e.ToTable("t_users");
 				e.HasKey(x => x.Id);
 				e.Property(x => x.Id).ValueGeneratedNever();
 				e.Property(x => x.Role).HasConversion<string>();
 				e.HasIndex(x => x.Email).IsUnique();
 
 				e.HasOne(x => x.Employee)
-					.WithOne(x => x.Profile)
-					.HasForeignKey<Employee>(x => x.ProfileId)
+					.WithOne(x => x.User)
+					.HasForeignKey<Employee>(x => x.UserId)
 					.OnDelete(DeleteBehavior.Cascade);
 			});
 
 			modelBuilder.Entity<Employee>(e =>
 			{
-				e.ToTable("employee");
-				e.HasKey(x => x.ProfileId);
-				e.Property(x => x.ProfileId).ValueGeneratedNever();
+				e.ToTable("t_employees");
+				e.HasKey(x => x.UserId);
+				e.Property(x => x.UserId).ValueGeneratedNever();
 				e.HasIndex(x => x.FiscalCode).IsUnique();
 			});
 
 			modelBuilder.Entity<Shift>(e =>
 			{
-				e.ToTable("shift");
+				e.ToTable("t_shifts");
 				e.HasKey(x => x.Id);
 				e.Property(x => x.Id).ValueGeneratedNever();
 				e.HasIndex(x => x.WorkDate).IsUnique();
@@ -56,7 +58,7 @@ namespace Five68
 
 			modelBuilder.Entity<ShiftAssignment>(e =>
 			{
-				e.ToTable("shift_assignment");
+				e.ToTable("t_shift_assignments");
 				e.HasKey(x => x.Id);
 				e.Property(x => x.Id).ValueGeneratedNever();
 				e.HasIndex(x => new { x.ShiftId, x.EmployeeId }).IsUnique();
@@ -74,7 +76,7 @@ namespace Five68
 
 			modelBuilder.Entity<SwapRequest>(e =>
 			{
-				e.ToTable("swap_request");
+				e.ToTable("t_swap_requests");
 				e.HasKey(x => x.Id);
 				e.Property(x => x.Id).ValueGeneratedNever();
 				e.Property(x => x.Status).HasConversion<string>();
@@ -93,6 +95,14 @@ namespace Five68
 					.WithMany()
 				 	.HasForeignKey(x => x.TargetEmployeeId)
 					.OnDelete(DeleteBehavior.Cascade);
+			});
+
+			modelBuilder.Entity<UserRefreshTokens>(e =>
+			{
+				e.ToTable("t_refresh_tokens");
+				e.HasKey(x => x.Id);
+				e.Property(x => x.Id).ValueGeneratedOnAdd();
+				e.HasIndex(x => x.Email);
 			});
 		}
 

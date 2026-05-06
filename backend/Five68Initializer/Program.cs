@@ -5,7 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using Five68;
-using Five68.Model;
+using Five68.Models;
 
 namespace Five68.Initializer
 {
@@ -37,7 +37,7 @@ namespace Five68.Initializer
 			using (var scope = serviceProvider.CreateScope())
 			{
 				var db = scope.ServiceProvider.GetRequiredService<Five68DbContext>();
-				// db.Database.EnsureDeleted();
+				db.Database.EnsureDeleted();
 				db.Database.EnsureCreated();
 				Console.WriteLine("Database created. Seeding data...");
 
@@ -50,7 +50,7 @@ namespace Five68.Initializer
 		private static void SeedData(Five68DbContext db)
 		{
 			// Prevent duplicate seeding
-			if (db.Profiles.Any())
+			if (db.Users.Any())
 			{
 				Console.WriteLine("Database already contains data. Skipping seed.");
 				return;
@@ -60,7 +60,7 @@ namespace Five68.Initializer
 			// Since Employee depends on Profile, we create them together.
 			// We must manually set IDs because of ValueGeneratedNever()
 
-			var adminProfile = new Profile
+			var admin = new User
 			{
 				Id = Guid.NewGuid(),
 				FullName = "Admin Admin",
@@ -68,7 +68,7 @@ namespace Five68.Initializer
 				Role = UserRole.Admin // Assuming an Enum named Role
 			};
 
-			var managerProfile = new Profile
+			var manager = new User
 			{
 				Id = Guid.NewGuid(),
 				FullName = "Managers",
@@ -76,7 +76,7 @@ namespace Five68.Initializer
 				Role = UserRole.Manager
 			};
 
-			var marioProfile = new Profile
+			var mario = new User
 			{
 				Id = Guid.NewGuid(),
 				FullName = "Mario Rossi",
@@ -84,7 +84,7 @@ namespace Five68.Initializer
 				Role = UserRole.Employee
 			};
 
-			var luigiProfile = new Profile
+			var luigi = new User
 			{
 				Id = Guid.NewGuid(),
 				FullName = "Luigi Rossi",
@@ -92,30 +92,30 @@ namespace Five68.Initializer
 				Role = UserRole.Employee
 			};
 
-			db.Profiles.AddRange(adminProfile, managerProfile, marioProfile, luigiProfile);
+			db.Users.AddRange(admin, manager, mario, luigi);
 
-			// Create Employees linked to Profiles via ProfileId
+			// Create Employees linked to Users via UserId
 			var adminEmployee = new Employee
 			{
-				ProfileId = adminProfile.Id, // PK & FK
+				UserId = admin.Id, // PK & FK
 				FiscalCode = "ADM001"
 			};
 
 			var managerEmployee = new Employee
 			{
-				ProfileId = managerProfile.Id,
+				UserId = manager.Id,
 				FiscalCode = "MGR002"
 			};
 
 			var marioEmployee = new Employee
 			{
-				ProfileId = marioProfile.Id,
+				UserId = mario.Id,
 				FiscalCode = "MROSSI80A01H501Z"
 			};
 
 			var luigiEmployee = new Employee
 			{
-				ProfileId = luigiProfile.Id,
+				UserId = luigi.Id,
 				FiscalCode = "LVERDI90B02H501Z"
 			};
 
@@ -129,21 +129,21 @@ namespace Five68.Initializer
 			{
 				Id = Guid.NewGuid(),
 				WorkDate = DateTime.UtcNow.Date,
-				CreatedBy = managerProfile.Id // Links to Creator
+				CreatedBy = manager.Id // Links to Creator
 			};
 
 			var tomorrowShift = new Shift
 			{
 				Id = Guid.NewGuid(),
 				WorkDate = DateTime.UtcNow.Date.AddDays(1),
-				CreatedBy = managerProfile.Id
+				CreatedBy = manager.Id
 			};
 
 			var yesterdayShift = new Shift
 			{
 				Id = Guid.NewGuid(),
 				WorkDate = DateTime.UtcNow.Date.AddDays(-1),
-				CreatedBy = adminProfile.Id
+				CreatedBy = admin.Id
 			};
 
 			db.Shifts.AddRange(todayShift, tomorrowShift, yesterdayShift);
@@ -156,14 +156,14 @@ namespace Five68.Initializer
 			{
 				Id = Guid.NewGuid(),
 				ShiftId = todayShift.Id,
-				EmployeeId = marioEmployee.ProfileId
+				EmployeeId = marioEmployee.UserId
 			};
 
 			var assignment2 = new ShiftAssignment
 			{
 				Id = Guid.NewGuid(),
 				ShiftId = tomorrowShift.Id,
-				EmployeeId = luigiEmployee.ProfileId
+				EmployeeId = luigiEmployee.UserId
 			};
 
 			// Manager is also working tomorrow
@@ -171,7 +171,7 @@ namespace Five68.Initializer
 			{
 				Id = Guid.NewGuid(),
 				ShiftId = tomorrowShift.Id,
-				EmployeeId = managerEmployee.ProfileId
+				EmployeeId = managerEmployee.UserId
 			};
 
 			db.ShiftAssignments.AddRange(assignment1, assignment2, assignment3);
@@ -184,8 +184,8 @@ namespace Five68.Initializer
 			{
 				Id = Guid.NewGuid(),
 				ShiftId = todayShift.Id,          // The shift being swapped
-				RequesterId = marioEmployee.ProfileId, // Mario asks
-				TargetEmployeeId = luigiEmployee.ProfileId, // Luigi is the target
+				RequesterId = marioEmployee.UserId, // Mario asks
+				TargetEmployeeId = luigiEmployee.UserId, // Luigi is the target
 				Status = SwapRequestStatus.Pending
 			};
 

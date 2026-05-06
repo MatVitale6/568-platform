@@ -5,6 +5,11 @@ using NLog.Config;
 using NLog.Extensions.Logging;
 using NLog.Targets;
 using NLog.Web;
+using Easy_Password_Validator;
+using Five68.Facades;
+using Five68.Services;
+using Microsoft.Extensions.Options;
+using Five68.Utils;
 
 
 namespace Five68
@@ -16,14 +21,13 @@ namespace Five68
 			WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 			builder.Configuration
 				.SetBasePath(AppContext.BaseDirectory)
-				.AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
+				.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
 				.AddEnvironmentVariables();
 
 			InitializeLogger();
 			LoadServicesIntoDI(builder.Services, builder.Configuration);
 
 			builder.Services.AddHttpContextAccessor();
-
 			builder.Services.AddEndpointsApiExplorer();
 			builder.Services.AddSwaggerGen(c =>
 			{
@@ -60,33 +64,59 @@ namespace Five68
 			// app.UseAuthorization();
 			// app.UseResponseCompression();
 
-			// app.MapControllers();
 			app.UseStaticFiles(new StaticFileOptions
 			{
 				RequestPath = "/static",
 			});
+			app.MapControllers();
 
 			Microsoft.Extensions.Logging.ILogger logger = app.Services.GetRequiredService<ILogger<Program>>();
 
 			app.Run();
 
 			logger.LogCritical("Shutting down");
-			NLog.LogManager.Shutdown();
+			LogManager.Shutdown();
 		}
 
 		public static void LoadServicesIntoDI(IServiceCollection services, IConfigurationRoot configuration)
 		{
+			// Settings
+			services.Configure<AppSettings>(configuration.GetSection(AppSettings.Position));
+
+			// Database
 			services.AddDbContext<Five68DbContext>((sp, options) =>
 			{
 				options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"));
 			});
 
-			// Setup Log with NLog
+			// Facades
+			services.AddScoped<RefreshTokenFacade>();
+			services.AddScoped<UserFacade>();
+
+			// Services
+			services.AddScoped<AuthService>();
+			services.AddSingleton<JwtService>();
+			services.AddScoped<UserService>();
+
+			// Utils
+			services.AddSingleton<UserUtils>();
+
+			// Password Validator
+			services.AddSingleton(sp =>
+			{
+				AppSettings settings = sp.GetRequiredService<IOptions<AppSettings>>().Value;
+				return new PasswordValidatorService(settings.PasswordRequirements);
+			});
+
+			// Logging
 			services.AddLogging(loggingBuilder =>
 			{
 				loggingBuilder.ClearProviders();
 				loggingBuilder.AddNLog(new NLogAspNetCoreOptions() { RemoveLoggerFactoryFilter = false });
 			});
+
+			// Controllers
+			services.AddControllers();
 		}
 
 		private static void InitializeLogger()

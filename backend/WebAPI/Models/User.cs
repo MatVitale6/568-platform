@@ -1,9 +1,10 @@
-namespace Five68.Model
+namespace Five68.Models
 {
-	public class Profile
+	public class User
 	{
 		public required Guid Id { get; set; }
 		public Guid? AuthUserId { get; set; } // to link to auth system
+		public string Password { get; set; }
 		public required string FullName { get; set; }
 		public required string Email { get; set; }
 		public required UserRole Role { get; set; }
