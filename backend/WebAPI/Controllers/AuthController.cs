@@ -24,12 +24,18 @@ namespace Five68.Controllers
 		[HttpPost("login")]
 		public async Task<IActionResult> Login(UserLogin userData)
 		{
-			logger_.LogTrace("/login API was called");
 			Tokens token = await authService_.Login(userData);
 
 			logger_.LogInformation("User " + userData.Email + " has logged in");
 
 			return Ok(token);
+		}
+
+		[HttpPost("refresh")]
+		public async Task<IActionResult> Refresh(Tokens token)
+		{
+			Tokens newJwtToken = await authService_.Refresh(token);
+			return Ok(newJwtToken);
 		}
 
 		/// <summary>
@@ -39,9 +45,7 @@ namespace Five68.Controllers
 		[HttpPost("logout")]
 		public async Task<IActionResult> Logout()
 		{
-			logger_.LogTrace("/logout API was called");
 			string? email = User.FindFirst(ClaimTypes.Email)?.Value;
-			logger_.LogDebug($"User: {User.ToString()}");
 			if (email is null)
 				return Unauthorized();
 

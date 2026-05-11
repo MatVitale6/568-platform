@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Five68.IntegrationTests;
 
@@ -16,6 +17,11 @@ public class Five68WebAppFactory : WebApplicationFactory<Program>, IAsyncLifetim
 			{
 				["AppSettings:Crypto:WorkFactor"] = "4",
 			});
+		});
+
+		builder.ConfigureLogging(logging =>
+		{
+			logging.AddFilter("Microsoft.EntityFrameworkCore", LogLevel.Warning);
 		});
 	}
 

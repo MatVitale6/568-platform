@@ -3,6 +3,8 @@ using Five68.Facades;
 using Five68.Models;
 using Five68.Models.Authentication;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using System.Security.Claims;
 
 namespace Five68.Services
 {
@@ -38,6 +40,34 @@ namespace Five68.Services
 			});
 
 			return token;
+		}
+
+		public async Task<Tokens> Refresh(Tokens token)
+		{
+			ClaimsPrincipal principal = jwtService_.GetPrincipalFromExpiredToken(token.AccessToken);
+			string? email = principal.FindFirst(ClaimTypes.Email)?.Value;
+			string? userId = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+			if (email is null || userId is null || !Guid.TryParse(userId, out Guid id))
+			{
+				throw new UnauthorizedException("Invalid token");
+			}
+
+			UserRefreshTokens? savedRefreshToken = await refreshTokenFacade_.ConsumeRefreshToken(email);
+			if (savedRefreshToken is null || savedRefreshToken.RefreshToken != token.RefreshToken || savedRefreshToken.ExpirationDate < DateTime.UtcNow)
+			{
+				throw new UnauthorizedException("Invalid or expired refresh token");
+			}
+
+			Tokens newTokens = jwtService_.GenerateTokens(id, email) ?? throw new UnauthorizedException("Invalid attempt");
+			await refreshTokenFacade_.UpsertUserRefreshTokens(new UserRefreshTokens
+			{
+				RefreshToken = newTokens.RefreshToken,
+				Email = email,
+				ExpirationDate = DateTime.UtcNow.AddDays(1),
+			});
+
+			return newTokens;
 		}
 
 		public async Task Logout(string email)
