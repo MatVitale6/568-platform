@@ -27,8 +27,8 @@ public class JwtServiceTests
 			{
 				Secret = Secret,
 				ExpiryMinutes = 60,
-				Issuer = Issuer,
-				Audience = Audience
+				ValidIssuer = Issuer,
+				ValidAudience = Audience
 			}
 		});
 

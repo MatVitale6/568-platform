@@ -40,5 +40,10 @@ namespace Five68.Services
 			return token;
 		}
 
+		public async Task Logout(string email)
+		{
+			await refreshTokenFacade_.DeleteUserRefreshTokens(email);
+		}
+
 	}
 }

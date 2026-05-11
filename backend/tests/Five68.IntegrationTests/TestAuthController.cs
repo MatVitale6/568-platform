@@ -92,4 +92,56 @@ public class TestAuthController : IClassFixture<Five68WebAppFactory>
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
+
+    [Fact]
+    public async Task Logout_ValidToken_Returns200()
+    {
+        var tokens = await LoginAsync(TestEmail, TestPassword);
+
+        client_.DefaultRequestHeaders.Authorization = new("Bearer", tokens.AccessToken);
+        var response = await client_.PostAsync("/auth/logout", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+
+    [Fact]
+    public async Task Logout_ValidToken_DeletesRefreshToken()
+    {
+        var tokens = await LoginAsync(TestEmail, TestPassword);
+
+        client_.DefaultRequestHeaders.Authorization = new("Bearer", tokens.AccessToken);
+        await client_.PostAsync("/auth/logout", null);
+
+        using var scope = factory_.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<Five68DbContext>();
+        db.RefreshTokens.Any(t => t.Email == TestEmail).Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task Logout_NoToken_Returns401()
+    {
+        client_.DefaultRequestHeaders.Authorization = null;
+        var response = await client_.PostAsync("/auth/logout", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task Logout_InvalidToken_Returns401()
+    {
+        client_.DefaultRequestHeaders.Authorization = new("Bearer", "this.is.not.a.valid.token");
+        var response = await client_.PostAsync("/auth/logout", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    private async Task<Tokens> LoginAsync(string email, string password)
+    {
+        var response = await client_.PostAsJsonAsync("/auth/login", new UserLogin
+        {
+            Email = email,
+            Password = password
+        });
+        return (await response.Content.ReadFromJsonAsync<Tokens>())!;
+    }
 }

@@ -14,7 +14,7 @@ namespace Five68.Facades
 
 		public async Task UpsertUserRefreshTokens(UserRefreshTokens refreshTokens)
 		{
-			await DeleteUserRefreshtokens(refreshTokens.Email);
+			await DeleteUserRefreshTokens(refreshTokens.Email);
 			db_.RefreshTokens.Add(refreshTokens);
 			await db_.SaveChangesAsync();
 		}
@@ -32,7 +32,7 @@ namespace Five68.Facades
 			return token;
 		}
 
-		public async Task DeleteUserRefreshtokens(string email)
+		public async Task DeleteUserRefreshTokens(string email)
 		{
 			await db_.RefreshTokens
 				.Where(x => x.Email == email)

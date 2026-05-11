@@ -1,4 +1,5 @@
 using Five68.Exceptions;
+using Npgsql;
 
 namespace Five68.Utils
 {
@@ -28,6 +29,7 @@ namespace Five68.Utils
 		private Task HandleExceptionAsync(HttpContext context, Exception ex)
 		{
 			context.Response.ContentType = "application/json";
+			string message = ex.Message;
 
 			switch (ex)
 			{
@@ -50,13 +52,19 @@ namespace Five68.Utils
 				case NotFoundException:
 					context.Response.StatusCode = StatusCodes.Status404NotFound;
 					break;
+				case NpgsqlException { IsTransient: true }:
+				case InvalidOperationException { InnerException: NpgsqlException { IsTransient: true } }:
+					logger_.LogError(ex, "Database unavailable");
+					context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
+					message = "Database is unavailable. Please try again later.";
+					break;
 				default:
 					logger_.LogCritical(ex, "");
 					context.Response.StatusCode = StatusCodes.Status500InternalServerError;
 					break;
 			}
 
-			return context.Response.WriteAsJsonAsync(new { message = ex.Message });
+			return context.Response.WriteAsJsonAsync(new { message });
 		}
 	}
 }

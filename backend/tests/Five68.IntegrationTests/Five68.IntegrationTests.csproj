@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <Content Include="..\..\WebAPI\appsettings.json" CopyToOutputDirectory="Always" />
+    <Content Include="..\..\WebAPI\appsettings.Development.json" CopyToOutputDirectory="Always" />
   </ItemGroup>
 
   <ItemGroup>

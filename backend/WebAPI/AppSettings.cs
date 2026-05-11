@@ -20,7 +20,9 @@ namespace Five68
 	{
 		public string Secret { get; init; } = string.Empty;
 		public int ExpiryMinutes { get; init; }
-		public string Issuer { get; init; } = string.Empty;
-		public string Audience { get; init; } = string.Empty;
+		public string ValidIssuer { get; init; } = string.Empty;
+		public string ValidAudience { get; init; } = string.Empty;
+		public bool ValidateIssuer { get; init; }
+		public bool ValidateAudience { get; init; }
 	}
 }
