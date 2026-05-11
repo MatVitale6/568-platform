@@ -13,13 +13,13 @@ namespace Five68
 
 	public class CryptoSettings
 	{
-		public int WorkFactor { get; set; } = 12;
+		public int WorkFactor { get; init; }
 	}
 
 	public class JWTSettings
 	{
 		public string Secret { get; init; } = string.Empty;
-		public int ExpiryMinutes { get; init; } = 60;
+		public int ExpiryMinutes { get; init; }
 		public string Issuer { get; init; } = string.Empty;
 		public string Audience { get; init; } = string.Empty;
 	}

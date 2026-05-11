@@ -64,11 +64,12 @@ namespace Five68
 			// app.UseAuthorization();
 			// app.UseResponseCompression();
 
+			app.UseMiddleware<ExceptionMiddleware>();
+			app.MapControllers();
 			app.UseStaticFiles(new StaticFileOptions
 			{
 				RequestPath = "/static",
 			});
-			app.MapControllers();
 
 			Microsoft.Extensions.Logging.ILogger logger = app.Services.GetRequiredService<ILogger<Program>>();
 

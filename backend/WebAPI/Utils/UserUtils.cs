@@ -17,7 +17,7 @@ namespace Five68.Utils
 
 		public bool CheckPassword(User user, string password)
 		{
-			return BCrypt.Net.BCrypt.Verify(password, user.Password);
+			return BCrypt.Net.BCrypt.Verify(password, user.PasswordHash);
 		}
 
 		/// <summary>

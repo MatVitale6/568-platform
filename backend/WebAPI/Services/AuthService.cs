@@ -21,16 +21,6 @@ namespace Five68.Services
 
 		public async Task<Tokens> Login(UserLogin userData)
 		{
-			if (string.IsNullOrEmpty(userData.Email))
-			{
-				throw new EntityException($"Il campo {nameof(userData.Email)}  non può essere vuoto");
-			}
-
-			if (string.IsNullOrEmpty(userData.Password))
-			{
-				throw new EntityException($"Il campo {nameof(userData.Password)} non può essere vuoto");
-			}
-
 			(bool validUser, User? user) = await userService_.TryGetUserAndCheckPasswordAsync(userData);
 
 			if (!validUser || user is null)

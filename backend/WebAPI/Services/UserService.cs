@@ -11,10 +11,11 @@ namespace Five68.Services
 		private readonly UserUtils userUtils_;
 		private ILogger logger_;
 
-		public UserService(UserFacade userFacade, UserUtils userUtils)
+		public UserService(UserFacade userFacade, UserUtils userUtils, ILogger<UserService> logger)
 		{
 			userFacade_ = userFacade;
 			userUtils_ = userUtils;
+			logger_ = logger;
 		}
 
 		public async Task<(bool success, User? user)> TryGetUserAndCheckPasswordAsync(UserLogin loginCredentials)
