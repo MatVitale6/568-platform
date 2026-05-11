@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using Five68;
 using Five68.Models;
+using System.Net;
 
 namespace Five68.Initializer
 {
@@ -33,6 +34,9 @@ namespace Five68.Initializer
 
 			var serviceProvider = services.BuildServiceProvider();
 
+			var adminPassword = configuration["AppSettings:Seed:AdminPassword"] ?? throw new InvalidOperationException("Seed:AdminPassword not configured in the application settings");
+			string workFactor = configuration["AppSettings:Crypto:WorkFactor"] ?? throw new InvalidOperationException("Crypto:WorkFactor not configured in the application settings");
+
 			// 3. Run Seeding
 			using (var scope = serviceProvider.CreateScope())
 			{
@@ -41,13 +45,13 @@ namespace Five68.Initializer
 				db.Database.EnsureCreated();
 				Console.WriteLine("Database created. Seeding data...");
 
-				SeedData(db);
+				SeedData(db, adminPassword, int.Parse(workFactor));
 			}
 
 			Console.WriteLine("Seeding complete.");
 		}
 
-		private static void SeedData(Five68DbContext db)
+		private static void SeedData(Five68DbContext db, string adminPassword, int workFactor)
 		{
 			// Prevent duplicate seeding
 			if (db.Users.Any())
@@ -65,23 +69,19 @@ namespace Five68.Initializer
 				Id = Guid.NewGuid(),
 				FullName = "Admin Admin",
 				Email = "admin@five68.com",
-				Role = UserRole.Admin // Assuming an Enum named Role
+				Role = UserRole.Admin, // Assuming an Enum named Role
+				Status = UserStatus.Active,
+				PasswordHash = BCrypt.Net.BCrypt.HashPassword(adminPassword),
 			};
 
 			var manager = new User
 			{
 				Id = Guid.NewGuid(),
-				FullName = "Managers",
+				FullName = "Luca Manager",
 				Email = "manager@five68.com",
-				Role = UserRole.Manager
-			};
-
-			var mario = new User
-			{
-				Id = Guid.NewGuid(),
-				FullName = "Mario Rossi",
-				Email = "mario@five68.com",
-				Role = UserRole.Employee
+				Role = UserRole.Manager,
+				Status = UserStatus.Active,
+				PasswordHash = BCrypt.Net.BCrypt.HashPassword("Manager@1234!"),
 			};
 
 			var luigi = new User
@@ -89,10 +89,14 @@ namespace Five68.Initializer
 				Id = Guid.NewGuid(),
 				FullName = "Luigi Rossi",
 				Email = "luigi@five68.com",
-				Role = UserRole.Employee
+				Role = UserRole.Employee,
+				Status = UserStatus.Disabled,
+				PasswordHash = null,
+				InviteToken = null,
+				InviteTokenExpiry = null
 			};
 
-			db.Users.AddRange(admin, manager, mario, luigi);
+			db.Users.AddRange(admin, manager, luigi);
 
 			// Create Employees linked to Users via UserId
 			var adminEmployee = new Employee
@@ -107,19 +111,13 @@ namespace Five68.Initializer
 				FiscalCode = "MGR002"
 			};
 
-			var marioEmployee = new Employee
-			{
-				UserId = mario.Id,
-				FiscalCode = "MROSSI80A01H501Z"
-			};
-
 			var luigiEmployee = new Employee
 			{
 				UserId = luigi.Id,
 				FiscalCode = "LVERDI90B02H501Z"
 			};
 
-			db.Employees.AddRange(adminEmployee, managerEmployee, marioEmployee, luigiEmployee);
+			db.Employees.AddRange(adminEmployee, managerEmployee, luigiEmployee);
 
 
 			// --- 2. SHIFTS ---
@@ -156,7 +154,7 @@ namespace Five68.Initializer
 			{
 				Id = Guid.NewGuid(),
 				ShiftId = todayShift.Id,
-				EmployeeId = marioEmployee.UserId
+				EmployeeId = luigiEmployee.UserId
 			};
 
 			var assignment2 = new ShiftAssignment
@@ -184,7 +182,7 @@ namespace Five68.Initializer
 			{
 				Id = Guid.NewGuid(),
 				ShiftId = todayShift.Id,          // The shift being swapped
-				RequesterId = marioEmployee.UserId, // Mario asks
+				RequesterId = managerEmployee.UserId, // manager asks
 				TargetEmployeeId = luigiEmployee.UserId, // Luigi is the target
 				Status = SwapRequestStatus.Pending
 			};
