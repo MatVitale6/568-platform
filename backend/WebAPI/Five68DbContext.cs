@@ -28,7 +28,7 @@ namespace Five68
 				e.Property(x => x.Id).ValueGeneratedNever();
 				e.Property(x => x.Role).HasConversion<string>();
 				e.HasIndex(x => x.Email).IsUnique();
-
+				e.HasIndex(x => x.InviteToken).IsUnique();
 				e.HasOne(x => x.Employee)
 					.WithOne(x => x.User)
 					.HasForeignKey<Employee>(x => x.UserId)

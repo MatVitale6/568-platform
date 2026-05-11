@@ -147,6 +147,7 @@ namespace Five68
 			services.AddScoped<AuthService>();
 			services.AddSingleton<JwtService>();
 			services.AddScoped<UserService>();
+			services.AddScoped<IEmailService, NoOpEmailService>();
 
 			// Utils
 			services.AddSingleton<UserUtils>();
