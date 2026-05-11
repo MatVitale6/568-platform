@@ -10,7 +10,7 @@ RUN dotnet restore WebAPI/WebAPI.csproj
 
 COPY . .
 WORKDIR /src/WebAPI
-RUN dotnet public -c $BUILD_ENV -o /app/publish
+RUN dotnet publish -c $BUILD_ENV -o /app/publish
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
 ARG BUILD_ENV
