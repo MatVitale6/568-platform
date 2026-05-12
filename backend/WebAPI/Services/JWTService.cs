@@ -1,3 +1,4 @@
+using Five68.Exceptions;
 using Five68.Models.Authentication;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -45,8 +46,8 @@ namespace Five68.Services
 				{
 					Subject = identity,
 					Expires = DateTime.UtcNow.AddMinutes(jwtSettings_.ExpiryMinutes),
-					Issuer = jwtSettings_.Issuer,
-					Audience = jwtSettings_.Audience,
+					Issuer = jwtSettings_.ValidIssuer,
+					Audience = jwtSettings_.ValidAudience,
 					SigningCredentials = new SigningCredentials(
 						new SymmetricSecurityKey(tokenKey),
 						SecurityAlgorithms.HmacSha256Signature)
@@ -65,7 +66,39 @@ namespace Five68.Services
 
 		private static string GenerateRefreshToken() => Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
 
+		public ClaimsPrincipal GetPrincipalFromExpiredToken(string token)
+		{
+			byte[] key = Encoding.UTF8.GetBytes(jwtSettings_.Secret);
 
+			TokenValidationParameters tokenValidationParameters = new()
+			{
+				ValidateIssuer = false,
+				ValidateAudience = false,
+				ValidateLifetime = false,
+				ValidateIssuerSigningKey = true,
+				IssuerSigningKey = new SymmetricSecurityKey(key),
+				ClockSkew = TimeSpan.Zero
+			};
 
+			JwtSecurityTokenHandler tokenHandler = new();
+			try
+			{
+				ClaimsPrincipal principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out SecurityToken securityToken);
+				if (securityToken is not JwtSecurityToken jwtToken || !jwtToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
+					throw new UnauthorizedException("Invalid token");
+
+				return principal;
+			}
+			catch (SecurityTokenException ex)
+			{
+				logger_.LogWarning(ex, "");
+				throw new UnauthorizedException("Invalid token");
+			}
+			catch (SecurityTokenArgumentException ex)
+			{
+				logger_.LogWarning(ex, "");
+				throw new UnauthorizedException("Invalid token");
+			}
+		}
 	}
 }

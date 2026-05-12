@@ -10,6 +10,10 @@ using Five68.Facades;
 using Five68.Services;
 using Microsoft.Extensions.Options;
 using Five68.Utils;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using System.Reflection;
 
 
 namespace Five68
@@ -22,9 +26,19 @@ namespace Five68
 			builder.Configuration
 				.SetBasePath(AppContext.BaseDirectory)
 				.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+				.AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
 				.AddEnvironmentVariables();
 
 			InitializeLogger();
+
+			LogManager.GetCurrentClassLogger().Debug(
+				"Environment: {0} | Loaded config keys: {1}",
+				builder.Environment.EnvironmentName,
+				string.Join(", ", builder.Configuration.AsEnumerable()
+					.Where(kv => kv.Key.StartsWith("Logging"))
+					.Select(kv => $"{kv.Key}={kv.Value}"))
+			);
+
 			LoadServicesIntoDI(builder.Services, builder.Configuration);
 
 			builder.Services.AddHttpContextAccessor();
@@ -32,10 +46,20 @@ namespace Five68
 			builder.Services.AddSwaggerGen(c =>
 			{
 				c.SwaggerDoc("v1", new OpenApiInfo { Title = "568 Platform APIs", Version = "v1" });
+				c.AddSecurityDefinition("bearer", new OpenApiSecurityScheme()
+				{
+					Type = SecuritySchemeType.Http,
+					Scheme = "bearer",
+					BearerFormat = "JWT",
+					Description = "JWT Authorization header using the Bearer scheme"
+				});
 
-				// add Accept Language Header here in case of intl
-
-				// Add security definitions here
+				c.AddSecurityRequirement(document => new OpenApiSecurityRequirement
+				{
+					[new OpenApiSecuritySchemeReference("bearer", document)] = []
+				});
+				String xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+				c.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
 			});
 
 			// Configure the HTTP request pipeline
@@ -60,15 +84,16 @@ namespace Five68
 
 			app.UseHttpsRedirection();
 			app.UseCors();
-			// app.UseAuthentication();
-			// app.UseAuthorization();
+			app.UseAuthentication();
+			app.UseAuthorization();
 			// app.UseResponseCompression();
 
+			app.UseMiddleware<ExceptionMiddleware>();
+			app.MapControllers();
 			app.UseStaticFiles(new StaticFileOptions
 			{
 				RequestPath = "/static",
 			});
-			app.MapControllers();
 
 			Microsoft.Extensions.Logging.ILogger logger = app.Services.GetRequiredService<ILogger<Program>>();
 
@@ -82,6 +107,31 @@ namespace Five68
 		{
 			// Settings
 			services.Configure<AppSettings>(configuration.GetSection(AppSettings.Position));
+
+			JWTSettings jwtSettings = configuration.GetSection(AppSettings.Position)
+				.GetSection("JWTSettings")
+				.Get<JWTSettings>()!;
+
+			services.AddAuthentication(x =>
+			{
+				x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+				x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+			}).AddJwtBearer(options =>
+				{
+					options.SaveToken = true;
+					options.TokenValidationParameters = new TokenValidationParameters
+					{
+						ValidateIssuer = jwtSettings.ValidateIssuer,
+						ValidateAudience = jwtSettings.ValidateAudience,
+						ValidateLifetime = true,
+						ValidateIssuerSigningKey = true,
+						ValidIssuer = jwtSettings.ValidIssuer,
+						ValidAudience = jwtSettings.ValidAudience,
+						IssuerSigningKey = new SymmetricSecurityKey(
+							Encoding.UTF8.GetBytes(jwtSettings.Secret)),
+						ClockSkew = TimeSpan.Zero,
+					};
+				});
 
 			// Database
 			services.AddDbContext<Five68DbContext>((sp, options) =>
@@ -97,6 +147,7 @@ namespace Five68
 			services.AddScoped<AuthService>();
 			services.AddSingleton<JwtService>();
 			services.AddScoped<UserService>();
+			services.AddScoped<IEmailService, NoOpEmailService>();
 
 			// Utils
 			services.AddSingleton<UserUtils>();

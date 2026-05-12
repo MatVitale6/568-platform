@@ -39,6 +39,11 @@ namespace Five68.Facades
 			return await context_.Users.ToListAsync();
 		}
 
+		internal async Task<User> FindByInviteTokenAsync(string token)
+		{
+			return await context_.Users.FirstOrDefaultAsync(x => x.InviteToken == token);
+		}
+
 		internal async Task<int> GetUserNumber()
 		{
 			return await context_.Users.CountAsync();

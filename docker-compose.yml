@@ -25,6 +25,25 @@ services:
     depends_on:
       - Five68-db
 
+  unit-tests:
+    profiles: [ test ]
+    build:
+      context: backend/
+      dockerfile: tests/Dockerfile
+      args:
+        TEST_PROJECT: Five68.UnitTests
+
+  integration-tests:
+    profiles: [ test ]
+    build:
+      context: backend/
+      dockerfile: tests/Dockerfile
+      args:
+        TEST_PROJECT: Five68.IntegrationTests
+    depends_on:
+      Five68-db:
+        condition: service_healthy
+
   # Database
   Five68-db:
     hostname: Five68-db
@@ -39,3 +58,8 @@ services:
       - "5432:5432"
     volumes:
       - ./io/database:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
