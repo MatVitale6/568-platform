@@ -1,168 +1,277 @@
-﻿# 568 Platform
+# 568 Platform
 
 Web app per la gestione dei turni settimanali del locale 568.
 
 ## Stack
 
 | Layer | Tech |
-|---|---|
+| --- | --- |
 | Frontend | React 19 + Vite + TypeScript |
 | UI | Tailwind CSS v4 + Shadcn/ui |
 | Routing | React Router v7 |
-| Backend | Supabase (Postgres + Auth + Edge Functions) |
-| Notifiche | Resend (email) + Telegram Bot |
-| Deploy | Vercel |
-| Test | Vitest + Testing Library |
+| Backend | .NET 10 WebAPI (C#) |
+| ORM | Entity Framework Core + Migrations |
+| Database | PostgreSQL 17 (Docker) |
+| Auth | JWT (access token + refresh token) |
+| Notifiche | Resend (email) + Telegram Bot (Edge Functions) |
+| Deploy | Vercel (frontend) |
+| Test Backend | xUnit (unit + integration) |
+| Test Frontend | Vitest + Testing Library |
+
+## Architettura
+
+```text
+┌─────────────────────┐        REST API        ┌─────────────────────────┐
+│   Frontend (React)  │ ─────────────────────► │   Backend (.NET 10)     │
+│                     │                         │   WebAPI  :8080         │
+│  • UI Components    │ ◄───────────────────── │  • Controllers          │
+│  • React Router     │        JSON             │  • Facades / Services   │
+│  • HTTP calls       │                         │  • JWT Auth             │
+└─────────────────────┘                         │  • EF Core              │
+                                                 └───────────┬─────────────┘
+                                                             │
+                                                     ┌───────▼──────┐
+                                                     │  PostgreSQL  │
+                                                     │  :5432       │
+                                                     └──────────────┘
+```
+
+Le notifiche email e Telegram rimangono gestite tramite **Supabase Edge Functions** (folder `supabase/functions/`). (todo: da rimuovere)
 
 ## Funzionalità
 
-### Operative
-- Login con autenticazione Supabase e ruoli (admin / employee)
-- Primo accesso con link di invito → imposta password → accesso automatico
-- Gestione dipendenti: crea, modifica, elimina, invita via email o link diretto
-- Badge stato dipendente: **Non invitato** / **Invitato** / **Attivo** (ha completato il primo accesso)
+- Login / Logout con JWT (access token + refresh token)
+- Registrazione tramite link di invito → impostazione password → accesso automatico
+- Gestione dipendenti: crea, modifica, elimina, invita via link
+- Ruoli: **Admin** / **Manager** / **Employee**
 - Calendario turni settimanale con navigazione e copia settimana
-- Creazione e modifica turni con drag-and-drop
-- Gestione giorni di chiusura
-- Richieste di cambio turno con badge pending
-- Accettazione / rifiuto cambi turno
-- Notifiche email (Resend) per ogni evento swap e digest settimanale
-- Notifiche Telegram: collegamento account tramite bot, notifiche swap e digest settimanale
+- Creazione e modifica turni
+- Richieste di cambio turno con stati Pending / Accepted / Rejected
+- Notifiche email (Resend) e Telegram per eventi swap e digest settimanale
 - Layout mobile-first / PWA-ready
-
-### Non ancora implementato
-- Web Push (infrastruttura presente, in attesa di dominio verificato per VAPID)
-- Dominio email verificato su Resend (attualmente sandbox `onboarding@resend.dev`)
 
 ## Struttura del progetto
 
 ```text
+backend/
+  WebAPI/                     # .NET 10 WebAPI
+    Controllers/              # AuthController, UserController
+    Facades/                  # Logica orchestrazione
+    Services/                 # AuthService, JwtService, UserService
+    Migrations/               # EF Core migrations
+    Models/                   # Entità DB
+    appsettings.json
+    appsettings.Development.json
+  Five68Initializer/          # Tool di seed del database
+  tests/
+    Five68.UnitTests/
+    Five68.IntegrationTests/
+  Dockerfile
 frontend/
   src/
-    __tests__/          # Test routing (Gruppo B)
+    __tests__/
     components/
       calendar/
       employees/
       modals/
       ui/
     context/
-      __tests__/        # Test mapSupabaseUser (Gruppo A)
       AuthContext.tsx
       RequestsContext.tsx
     hooks/
     lib/
-      __tests__/        # Test colorUtils (Gruppo A)
-      colorUtils.ts     # Funzioni pure per colori avatar
-      supabase.ts
     pages/
 supabase/
   functions/
-    send-email/         # Notifiche swap via email + Telegram
-    send-invite/        # Invito dipendenti (email o link diretto)
-    telegram-webhook/   # Webhook bot Telegram per collegamento account
-    weekly-digest/      # Digest settimanale email + Telegram
+    send-email/
+    send-invite/
+    telegram-webhook/
+    weekly-digest/
   schema.sql
-  bootstrap_admin.sql
-  telegram.sql
-  push_notifications.sql
-tests/
-  test-set-password.ps1   # Test API PowerShell (richiede $env:SUPABASE_ANON_KEY)
-  e2e-set-password.js     # Test E2E Puppeteer
-test-telegram.ps1         # Test integrazione Telegram (richiede $env:TELEGRAM_BOT_TOKEN)
+docker-compose.yml
 ```
 
-## Setup locale
+---
 
-### Requisiti
-- Node.js 18+
-- npm 9+
-- Progetto Supabase
+## Setup e avvio
 
-### Installazione
+### Prerequisiti
+
+- [Docker](https://www.docker.com/) e Docker Compose
+- Node.js 18+ e npm 9+ (solo per il frontend)
+- .NET 10 SDK (opzionale, solo per sviluppo backend fuori Docker)
+
+---
+
+### 1. Backend + Database (Docker)
+
+Tutti i servizi backend girano tramite Docker Compose.
+
+#### Configurazione
+
+Prima di avviare, assicurati che il file `backend/WebAPI/appsettings.Development.json` esista con i valori corretti. Il file di default (già presente nel repo) punta al database Docker con le credenziali di sviluppo:
+
+> **Attenzione:** non committare mai `appsettings.Development.json` con segreti reali. Il file è già in `.gitignore`.
+
+#### Avvio
 
 ```bash
-git clone https://github.com/MatVitale6/568-platform.git
-cd 568-platform/frontend
+# Avvia database + backend API
+docker compose up --build
+
+# Oppure in background
+docker compose up --build -d
+```
+
+Il backend sarà disponibile su `http://localhost:8080`.
+La Swagger UI è accessibile su `http://localhost:8080/swagger` (solo in ambiente Development).
+
+#### Fermare i servizi
+
+```bash
+docker compose down
+
+# Per eliminare anche il volume del database
+docker compose down -v
+```
+
+---
+
+### 2. Database Initializer (seed)
+
+Il **Five68Initializer** è un tool separato che:
+
+- Elimina e ricrea lo schema del database
+- Inserisce dati di seed (admin, manager, dipendenti di esempio, turni, swap request)
+
+> **Usare solo in ambiente di sviluppo/testing. Cancella tutti i dati esistenti.**
+
+```bash
+docker compose run --build --rm db_init
+```
+
+---
+
+### 3. Frontend
+
+```bash
+cd frontend
 npm install
 ```
 
-### Variabili d'ambiente
-
-Crea `frontend/.env.local` partendo da `frontend/.env.example`:
+Crea il file `frontend/.env.local` (non committare):
 
 ```bash
 VITE_SUPABASE_URL=https://<project-ref>.supabase.co
 VITE_SUPABASE_ANON_KEY=<anon-key>
+# Opzionale - Web Push
+VITE_VAPID_PUBLIC_KEY=<vapid-public-key>
 ```
 
-### Avvio
+Avvio:
 
 ```bash
 cd frontend
 npm run dev
 ```
 
-### Test
+---
+
+## Test
+
+### Backend
+
+I test girano in Docker tramite i profili `test`:
+
+```bash
+# Unit test
+docker compose --profile test run unit-tests
+
+# Integration test (richiede il DB healthy)
+docker compose --profile test run integration-tests
+```
+
+I test di integrazione usano `Five68WebAppFactory` per avviare un server in-process con un database PostgreSQL reale.
+
+### Frontend
 
 ```bash
 cd frontend
-npm test          # run once
-npm run test:watch  # modalità watch
+npm test           # run once
+npm run test:watch # modalità watch
 ```
 
-## Bootstrap Supabase
+---
 
-Esegui i seguenti SQL nell'ordine nel SQL Editor di Supabase:
+## API principali
 
-1. **[supabase/schema.sql](supabase/schema.sql)** — schema principale
-2. **[supabase/bootstrap_admin.sql](supabase/bootstrap_admin.sql)** — crea il primo utente admin (sostituire i placeholder)
-3. **[supabase/swap_request_workflow.sql](supabase/swap_request_workflow.sql)** — workflow richieste cambio turno
-4. **[supabase/push_notifications.sql](supabase/push_notifications.sql)** — tabelle Web Push
-5. **[supabase/telegram.sql](supabase/telegram.sql)** — colonna `telegram_chat_id`, tabella token collegamento, RPC
+| Metodo | Endpoint | Descrizione | Auth |
+| --- | --- | --- | --- |
+| `POST` | `/api/auth/login` | Login, restituisce access + refresh token | No |
+| `POST` | `/api/auth/logout` | Logout, invalida il refresh token | Sì |
+| `POST` | `/api/auth/refresh` | Rinnova l'access token | No |
+| `POST` | `/api/auth/signup` | Registrazione tramite invite token | No |
+| `GET` | `/api/user/me` | Profilo utente corrente | Sì |
+| `GET` | `/api/user` | Lista utenti (admin/manager) | Sì |
+| `POST` | `/api/user/invite` | Genera link invito per un nuovo utente | Sì |
 
-Poi eseguire `NOTIFY pgrst, 'reload schema';` per aggiornare la cache PostgREST.
+La documentazione completa è disponibile via Swagger su `http://localhost:8080/swagger`.
 
-## Edge Functions
+---
 
-Deploy con:
+## Data model
+
+### Tabelle principali
+
+| Tabella | Descrizione |
+| --- | --- |
+| `Users` | Profili, ruoli (`Admin`, `Manager`, `Employee`), stato, hash password |
+| `Employees` | Dati dipendente (es. codice fiscale), chiave esterna su `Users` |
+| `Shifts` | Un turno per data, creato da un utente |
+| `ShiftAssignments` | Assegnazione dipendente a un turno |
+| `SwapRequests` | Richieste di cambio turno tra dipendenti |
+| `RefreshTokens` | Token di rinnovo JWT per sessione utente |
+
+### Modello auth
+
+- `Users.Id` è l'ID interno dell'utente nell'applicazione
+- L'autenticazione è gestita dal backend .NET con JWT
+- Il refresh token è salvato in `RefreshTokens` ed è monouso (rotation)
+
+---
+
+## Supabase Edge Functions (Notifiche)
+
+Le notifiche email e Telegram sono gestite da Supabase Edge Functions.
+
+Deploy:
 
 ```bash
 npx supabase functions deploy <nome-funzione> --project-ref <ref> --use-api
 ```
 
-Secrets da configurare in Supabase Dashboard → Functions → Secrets:
+Secrets da configurare in **Supabase Dashboard → Functions → Secrets**:
 
 | Secret | Descrizione |
-|---|---|
-| `RESEND_API_KEY` | Chiave API Resend per email |
+| --- | --- |
+| `RESEND_API_KEY` | Chiave API Resend |
 | `TELEGRAM_BOT_TOKEN` | Token del bot Telegram |
-| `TELEGRAM_WEBHOOK_SECRET` | Secret header per il webhook Telegram |
-| `SUPABASE_SERVICE_ROLE_KEY` | Chiave service role (già disponibile di default) |
-| `APP_URL` | URL dell'app (`https://568-platform.vercel.app`) |
+| `TELEGRAM_WEBHOOK_SECRET` | Header secret per il webhook Telegram |
+| `SUPABASE_SERVICE_ROLE_KEY` | Chiave service role (disponibile di default) |
+| `APP_URL` | URL dell'app (es. `https://568-platform.vercel.app`) |
 
-## Deploy
+---
+
+## Deploy Frontend
 
 ```bash
 npx vercel --prod
 ```
 
+---
 
-## Data model
+## Note
 
-### Tables
-- `profiles`: app profiles and roles
-- `employees`: employee-only fields
-- `shifts`: one row per day
-- `shift_assignments`: employees assigned to a shift
-- `swap_requests`: shift swap requests
-
-### Auth model
-- `profiles.id` is the internal app profile id
-- `profiles.auth_user_id` links a profile to `auth.users.id`
-- This allows creating employees before they have a real auth account
-
-## Notes
-
-- `.env.local` is ignored and must never be committed
-- The app still has mock fallback paths, but the main employee and calendar flows now work with Supabase
-- Web Push also requires `VITE_VAPID_PUBLIC_KEY` in `.env.local`
+- `appsettings.Development.json` e `.env.local` non devono mai essere committati
+- Il `docker-compose.yml` monta `./io/database` come volume persistente per PostgreSQL; cancellalo manualmente per ripartire da zero senza usare l'initializer
+- Il `Five68Initializer` chiama `EnsureDeleted()` + `EnsureCreated()`: non usarlo mai su dati reali
