@@ -315,7 +315,7 @@ __pycache__/
 #MacOS Specific ignores
 .DS_Store
 
-io/
+io/database
 .config/dotnet-tools.json
 
 frontend/.angular/*
