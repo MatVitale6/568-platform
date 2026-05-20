@@ -30,6 +30,11 @@ namespace Five68.Services
 				throw new UnauthorizedException("Credenziali non valide");
 			}
 
+			if (user.Status != UserStatus.Active)
+			{
+				throw new UnauthorizedException("Account non attivo");
+			}
+
 			Tokens token = jwtService_.GenerateTokens(user.Id, user.Email) ?? throw new InternalServerErrorException("Invalid attempt");
 
 			await refreshTokenFacade_.UpsertUserRefreshTokens(new UserRefreshTokens
