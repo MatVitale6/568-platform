@@ -9,7 +9,8 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Five68.IntegrationTests;
 
-public class TestUserController : IClassFixture<Five68WebAppFactory>
+[Collection("Integration")]
+public class TestUserController
 {
     private readonly HttpClient client_;
     private readonly Five68WebAppFactory factory_;
@@ -251,6 +252,206 @@ public class TestUserController : IClassFixture<Five68WebAppFactory>
         });
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    // --- POST /user/{id}/invite ---
+
+    [Fact]
+    public async Task Invite_AdminInvitesEmployee_Returns200WithToken()
+    {
+        await AuthorizeAsAsync(AdminEmail);
+        Guid id = GetUserId(EmployeeEmail);
+
+        var response = await client_.PostAsync($"/user/{id}/invite", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.Content.ReadFromJsonAsync<Dictionary<string, string>>();
+        body!["inviteToken"].Should().NotBeNullOrEmpty();
+    }
+
+    [Fact]
+    public async Task Invite_AdminInvitesEmployee_SetsStatusToPending()
+    {
+        await AuthorizeAsAsync(AdminEmail);
+        Guid id = GetUserId(EmployeeEmail);
+
+        await client_.PostAsync($"/user/{id}/invite", null);
+
+        using var scope = factory_.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<Five68DbContext>();
+        db.Users.First(u => u.Id == id).Status.Should().Be(UserStatus.Pending);
+    }
+
+    [Fact]
+    public async Task Invite_EmployeeInvites_Returns403()
+    {
+        await AuthorizeAsAsync(EmployeeEmail);
+        Guid id = GetUserId(AdminEmail);
+
+        var response = await client_.PostAsync($"/user/{id}/invite", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task Invite_UnknownUser_Returns404()
+    {
+        await AuthorizeAsAsync(AdminEmail);
+
+        var response = await client_.PostAsync($"/user/{Guid.NewGuid()}/invite", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task Invite_Unauthenticated_Returns401()
+    {
+        client_.DefaultRequestHeaders.Authorization = null;
+        Guid id = GetUserId(EmployeeEmail);
+
+        var response = await client_.PostAsync($"/user/{id}/invite", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    // --- POST /user/invite/accept ---
+
+    [Fact]
+    public async Task AcceptInvite_ValidToken_Returns200()
+    {
+        string token = await GenerateInviteForAsync(EmployeeEmail);
+
+        var response = await client_.PostAsJsonAsync("/user/invite/accept", new InviteAccept
+        {
+            Token = token,
+            Password = "NewP@ss1!"
+        });
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+
+    [Fact]
+    public async Task AcceptInvite_ValidToken_SetsStatusToActive()
+    {
+        string token = await GenerateInviteForAsync(EmployeeEmail);
+        Guid id = GetUserId(EmployeeEmail);
+
+        await client_.PostAsJsonAsync("/user/invite/accept", new InviteAccept
+        {
+            Token = token,
+            Password = "NewP@ss1!"
+        });
+
+        using var scope = factory_.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<Five68DbContext>();
+        db.Users.First(u => u.Id == id).Status.Should().Be(UserStatus.Active);
+    }
+
+    [Fact]
+    public async Task AcceptInvite_ValidToken_ClearsInviteToken()
+    {
+        string token = await GenerateInviteForAsync(EmployeeEmail);
+        Guid id = GetUserId(EmployeeEmail);
+
+        await client_.PostAsJsonAsync("/user/invite/accept", new InviteAccept
+        {
+            Token = token,
+            Password = "NewP@ss1!"
+        });
+
+        using var scope = factory_.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<Five68DbContext>();
+        var user = db.Users.First(u => u.Id == id);
+        user.InviteToken.Should().BeNull();
+        user.InviteTokenExpiry.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task AcceptInvite_InvalidToken_Returns401()
+    {
+        var response = await client_.PostAsJsonAsync("/user/invite/accept", new InviteAccept
+        {
+            Token = "not-a-valid-token",
+            Password = "NewP@ss1!"
+        });
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task AcceptInvite_ExpiredToken_Returns401()
+    {
+        string token = await GenerateInviteForAsync(EmployeeEmail);
+        Guid id = GetUserId(EmployeeEmail);
+
+        using (var scope = factory_.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<Five68DbContext>();
+            var user = db.Users.First(u => u.Id == id);
+            user.InviteTokenExpiry = DateTimeOffset.UtcNow.AddDays(-1);
+            db.SaveChanges();
+        }
+
+        var response = await client_.PostAsJsonAsync("/user/invite/accept", new InviteAccept
+        {
+            Token = token,
+            Password = "NewP@ss1!"
+        });
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task AcceptInvite_TokenUsedTwice_Returns401()
+    {
+        string token = await GenerateInviteForAsync(EmployeeEmail);
+
+        await client_.PostAsJsonAsync("/user/invite/accept", new InviteAccept
+        {
+            Token = token,
+            Password = "NewP@ss1!"
+        });
+
+        var replayResponse = await client_.PostAsJsonAsync("/user/invite/accept", new InviteAccept
+        {
+            Token = token,
+            Password = "AnotherP@ss1!"
+        });
+
+        replayResponse.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task AcceptInvite_MissingToken_Returns400()
+    {
+        var response = await client_.PostAsJsonAsync("/user/invite/accept", new
+        {
+            Password = "NewP@ss1!"
+        });
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task AcceptInvite_MissingPassword_Returns400()
+    {
+        string token = await GenerateInviteForAsync(EmployeeEmail);
+
+        var response = await client_.PostAsJsonAsync("/user/invite/accept", new
+        {
+            Token = token
+        });
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    private async Task<string> GenerateInviteForAsync(string email)
+    {
+        await AuthorizeAsAsync(AdminEmail);
+        Guid id = GetUserId(email);
+        var response = await client_.PostAsync($"/user/{id}/invite", null);
+        var body = await response.Content.ReadFromJsonAsync<Dictionary<string, string>>();
+        return body!["inviteToken"];
     }
 
     private async Task AuthorizeAsAsync(string email)

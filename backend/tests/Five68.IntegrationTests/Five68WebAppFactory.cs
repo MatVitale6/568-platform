@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Five68.IntegrationTests;
@@ -16,6 +15,7 @@ public class Five68WebAppFactory : WebApplicationFactory<Program>, IAsyncLifetim
 			config.AddInMemoryCollection(new Dictionary<string, string?>
 			{
 				["AppSettings:Crypto:WorkFactor"] = "4",
+				["ConnectionStrings:DefaultConnection"] = "Host=Five68-db;Port=5432;Database=Five68-test;Username=postgres;Password=postgres",
 			});
 		});
 
